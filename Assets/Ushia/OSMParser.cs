@@ -7,17 +7,21 @@ public class OSMParser
 {
     XmlDocument xmlData = null;
 
+    public OSMParser()
+    {
+        xmlData = new XmlDocument();
+    }
+
     public void load(string rawData)
     {
-        XmlDocument xmlData = new XmlDocument();
         xmlData.LoadXml(rawData);
     }
 
     // <bounds minlat = "41.4823600" minlon="2.1307800" maxlat="41.4859300" maxlon="2.1345400"/>
-    public int getMinLat() { return int.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["minlat"].Value); }
-    public int getMinLon() { return int.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["minlon"].Value); }
-    public int getMaxLat() { return int.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlat"].Value); }
-    public int getMaxLon() { return int.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlon"].Value); }
+    public double getMinLat() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["minlat"].Value); }
+    public double getMinLon() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["minlon"].Value); }
+    public double getMaxLat() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlat"].Value); }
+    public double getMaxLon() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlon"].Value); }
 
     // TODO
     public List<OSMNode> getRoads()
@@ -29,29 +33,22 @@ public class OSMParser
 
     public List<OSMNode> getNodes()
     {
-        List<OSMNode> l = new List<OSMNode>();
-
-        float ampliator = 10f;
-        
+        List<OSMNode> l = new List<OSMNode>();        
         /*
         <osm>
             <node id="1423405850" visible="true" version="1" changeset="9212407" timestamp="2011-09-04T20:47:26Z" user="cfaerber" uid="17085" lat="48.1405398" lon="11.5430526"/>
         </osm>
         */
-
         XmlNodeList nodeList = xmlData.SelectNodes("/osm/node");
         //Debug.Log(nodeList.Count + " nodes in total.");
 
-        OSMNode OSMn = new OSMNode();
-
         foreach (XmlNode n in nodeList)
         {
-            OSMn.id  =   int.Parse(n.Attributes["id" ].Value);
-            OSMn.lat = float.Parse(n.Attributes["lat"].Value) * ampliator;
-            OSMn.lon = float.Parse(n.Attributes["lon"].Value) * ampliator;
-            l.Add(OSMn);
+            long   id  =   long.Parse(n.Attributes["id" ].Value);
+            double lat = double.Parse(n.Attributes["lat"].Value);
+            double lon = double.Parse(n.Attributes["lon"].Value);
+            l.Add(new OSMNode(id, lon, lat));
         }
-
         return l;
     }
 }

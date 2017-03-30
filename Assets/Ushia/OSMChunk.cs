@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 public class OSMChunk
 {
@@ -14,13 +15,20 @@ public class OSMChunk
     private double maxLat = 0;
     private double maxLon = 0;
 
-    private List<OSMNode> nodes = null;
+    public Vector3 virtualWorldPos = Vector3.zero;
+
+    public List<OSMNode> nodes = null;
 
     // geters
     public double getMinLat() { return minLat; }
     public double getMinLon() { return minLon; }
     public double getMaxLat() { return maxLat; }
     public double getMaxLon() { return maxLon; }
+
+    public double getMinPosY() { return minLat; }
+    public double getMinPosX() { return minLon; }
+    public double getMaxPosY() { return maxLat; }
+    public double getMaxPosX() { return maxLon; }
 
     // sets
     public void setMinLat(double _minLat) { minLat = _minLat; }
@@ -38,6 +46,9 @@ public class OSMChunk
 
     // constructors
     public OSMChunk() { }
+    public OSMChunk(string filePath) { loadOSM(filePath); }
+
+    private bool isParserInitialized() { return parser != null; }
 
     private void loadBounds()
     {
@@ -62,12 +73,23 @@ public class OSMChunk
         return true;
     }
 
-    private bool isParserInitialized() { return parser != null; }
-
     public bool loadNodes()
     {
         if (!isParserInitialized()) return false;
         nodes = parser.getNodes();
+
+        /// normalize
+        double minX = UshiaMaths.lon2x(minLon);
+        double minY = UshiaMaths.lat2y(minLat);
+        //Debug.Log(minX + " - " + minY);
+
+        /// Mercator
+        foreach (OSMNode n in nodes)
+        {
+            n.pos.x = (float)UshiaMaths.lon2x(n.lon) - (float)minX;
+            n.pos.z = (float)UshiaMaths.lat2y(n.lat) - (float)minY;
+        }
+
         return true;
     }
 }

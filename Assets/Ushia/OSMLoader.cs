@@ -18,9 +18,18 @@ public class OSMLoader
 
     public static string loadFromFile(string path)
     {
+        if (path == "")
+        {
+            OSMLog.error("OSMLoader::LoadFromFile - OSM file path is empty.");
+            return null;
+        }
         StreamReader sr = File.OpenText("Assets\\Ushia\\OSMData" + "\\" + path);
         string data = sr.ReadToEnd();
         sr.Close();
+        if(data == "")
+        {
+            OSMLog.error("OSMLoader::LoadFromFile - OSM file is empty.");
+        }
         return data;
     }
 }

@@ -2,6 +2,9 @@
 
 public static class UshiaMaths
 {
+    /// Earth radius in meters on the equator
+    public static double RADIUS = 6378137.0;
+
     /// <summary>
     /// Degrees to radiants.
     /// </summary>
@@ -42,5 +45,24 @@ public static class UshiaMaths
         double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
         float dist = (float)(earthRadius * c);
         return dist;
+    }
+
+    /// Spherical Pseudo-Mercator projection functions
+    /// from OpenStreetMaps Wiki: http://wiki.openstreetmap.org/wiki/Mercator#C.23
+
+    public static double lat2y(double lat)
+    {
+        return  Math.Log(Math.Tan(deg2Rad(lat) / 2 + Math.PI / 4)) * RADIUS;
+    }
+
+    /// my interpretation of lon functions
+    public static double x2lon(double aX)
+    {
+        return rad2Deg(aX / RADIUS);
+    }
+
+    public static double lon2x(double aLong)
+    {
+        return deg2Rad(aLong) * RADIUS;
     }
 }
