@@ -6,20 +6,22 @@ using UnityEngine;
 public class OSMChunk
 {
     OSMParser parser = null;
-
-    /// <summary>
+    
     /// bounds
-    /// </summary>
     private double minLat = 0;
     private double minLon = 0;
     private double maxLat = 0;
     private double maxLon = 0;
 
     public Vector3 virtualWorldPos = Vector3.zero;
+    public double width = 0, height = 0; // x and z unity coordinates
 
-    public List<OSMNode> nodes = null;
+    /// Here is explained why to use Hashtable
+    /// http://cc.davelozinski.com/c-sharp/fastest-collection-for-string-lookups
+    public Hashtable nodes = null;
+    public Hashtable ways = null;
 
-    // geters
+    /// geters
     public double getMinLat() { return minLat; }
     public double getMinLon() { return minLon; }
     public double getMaxLat() { return maxLat; }
@@ -30,7 +32,7 @@ public class OSMChunk
     public double getMaxPosY() { return maxLat; }
     public double getMaxPosX() { return maxLon; }
 
-    // sets
+    /// sets
     public void setMinLat(double _minLat) { minLat = _minLat; }
     public void setMinLon(double _minLon) { minLon = _minLon; }
     public void setMaxLat(double _maxLat) { maxLat = _maxLat; }
@@ -42,6 +44,12 @@ public class OSMChunk
         setMinLon(_minLon);
         setMaxLat(_maxLat);
         setMaxLon(_maxLon);
+    }
+
+    public void calculateDimensions()
+    {
+        width = UshiaMaths.lon2x(maxLon) - UshiaMaths.lon2x(minLon);
+        height = UshiaMaths.lat2y(maxLat) - UshiaMaths.lat2y(minLat);
     }
 
     // constructors
@@ -56,6 +64,7 @@ public class OSMChunk
         minLon = parser.getMinLon();
         maxLat = parser.getMaxLat();
         maxLon = parser.getMaxLon();
+        calculateDimensions();
     }
 
     public bool loadOSM(string filePath)
@@ -67,7 +76,6 @@ public class OSMChunk
         // initialize the parser
         parser = new OSMParser();
         parser.load(rawData);
-
         loadBounds();
 
         return true;
@@ -81,15 +89,21 @@ public class OSMChunk
         /// normalize
         double minX = UshiaMaths.lon2x(minLon);
         double minY = UshiaMaths.lat2y(minLat);
-        //Debug.Log(minX + " - " + minY);
 
         /// Mercator
-        foreach (OSMNode n in nodes)
+        foreach (DictionaryEntry e in nodes)
         {
+            OSMNode n = (OSMNode)e.Value;
             n.pos.x = (float)UshiaMaths.lon2x(n.lon) - (float)minX;
             n.pos.z = (float)UshiaMaths.lat2y(n.lat) - (float)minY;
         }
+        return true;
+    }
 
+    public bool loadWays()
+    {
+        if (!isParserInitialized()) return false;
+        ways = parser.getWays();
         return true;
     }
 }
