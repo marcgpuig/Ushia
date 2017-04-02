@@ -7,10 +7,10 @@ using System;
 
 public class OSMDownloader : MonoBehaviour
 {
-    public Rect area;
+    /*public Rect area;
     float minLon = float.MaxValue, maxLon = float.MinValue;
     float minLat = float.MaxValue, maxLat = float.MinValue;
     private List<Vector2> nodes = new List<Vector2>();
 
-    public string file = "";
+    public string file = "";*/
 }
