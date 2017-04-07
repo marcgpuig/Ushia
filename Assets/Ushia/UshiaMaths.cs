@@ -5,6 +5,8 @@ public static class UshiaMaths
     /// Earth radius in meters on the equator
     public static double RADIUS = 6378137.0;
 
+    public static double sec(double a) { return 1.0 / Math.Cos(a); }
+
     /// <summary>
     /// Degrees to radiants.
     /// </summary>
