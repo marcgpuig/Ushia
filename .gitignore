@@ -5,8 +5,14 @@
 /[Bb]uild/
 /[Bb]uilds/
 /Assets/AssetStoreTools*
+
+# Logs
 /Assets/Ushia/log/
 /Assets/Ushia/log.meta
+
+# Resources
+/Assets/Resources/
+/Assets/Resources.meta
 
 # Visual Studio 2015 cache directory
 /.vs/
