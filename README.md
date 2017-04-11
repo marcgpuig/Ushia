@@ -4,7 +4,7 @@ Project for [Synthia-dataset][synthia].
 
 This project uses [OpenStreetMap][OpenStreetMap] ([OSM XML][OSMXML]) and [Mapzen][Mapzen] data.
 
-![Cerdanyola][https://lh6.googleusercontent.com/wo1W_KCg7ij4UmFd3qoaUjMyQUATTYAafZzWJOpxpc7jZkWs2AQMYvXPCtN6DUhP5qudz23Uf-j22yY=w1920-h901-rw]
+![Cerdanyola](http://i.imgur.com/uJ3VXq9.png)
 
 ## Install
 
