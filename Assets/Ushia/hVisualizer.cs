@@ -28,7 +28,7 @@ public class hVisualizer : MonoBehaviour
         m.SetTexture("_MainTex", data);
 
         if (GetComponent<Terrain>() == null) return;
-
+        terrain = GetComponent<Terrain>();
         float eMinH = -11000;
         float eMaxH = 9000;
         float normWaterLvl = (0 - eMinH) / (eMaxH - eMinH);
@@ -36,14 +36,15 @@ public class hVisualizer : MonoBehaviour
         float constY = hDiff * normWaterLvl;
 
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, -4400, GetComponent<Transform>().position.z);
-        TerrainData td = GetComponent<Terrain>().terrainData;
-        td.heightmapResolution = 257;
+        TerrainData td = terrain.terrainData;
+        //td.heightmapResolution = 257;
+        td.alphamapResolution = 257;
 
-        float[,] heights = new float[256,256];
+        float[,] heights = new float[td.alphamapWidth, td.alphamapHeight];
 
-        for (int i = 0; i < data.width; i++)
+        for (int i = 0; i < td.alphamapWidth; i++)
         {
-            for (int j = 0; j < data.height; j++)
+            for (int j = 0; j < td.alphamapHeight; j++)
             {
                 Color c = data.GetPixel(i, j);
                 float r = c.r;
@@ -51,41 +52,21 @@ public class hVisualizer : MonoBehaviour
                 float b = c.b;
                 //if (j % 100 == 0) Debug.Log(r + " " + g + " " + b);
                 //heights[i, j] = ((r * 256 + g + b / 256) - 32768) * 0.05f;
-                heights[j, i] = (r * 256 + g + b / 256) / 256;
                 //if (j % 100 == 0) Debug.Log(heights[i, j]);
+                heights[j, i] = (r * 256 + g + b / 256) / 256;
+
+                /// bad border (?)
+                if (i == 256) heights[j, i] = heights[j, 255];
             }
+            /// bad border (?)
+            heights[256, i] = heights[255, i];
         }
 
         td.SetHeights(0, 0, heights);
-        GetComponent<Terrain>().ApplyDelayedHeightmapModification();
-        //GameObject terrain = (GameObject)Terrain.CreateTerrainGameObject(td);
-        //terrain.transform.position = new Vector3(lenght * (x - 1), 0, width * (y - 1));
-
-        /// Tile that containts the given Longitude and Latitude
-        GCS tile = HeightLoader.WorldToTilePos(target.lon, target.lat, zoom);
-        tile.lon = (float)System.Math.Floor(tile.lon);
-        tile.lat = (float)System.Math.Floor(tile.lat);
-
-        /// Longitude and Latitude of the bottom left point of the tile
-        GCS tileGCS = HeightLoader.TileToWorldPos(tile.lon, tile.lat, zoom);
-
-        /// size of the terrain chunk in GCS
-        GCS tileSize = HeightLoader.zoomSize(zoom);
-        Debug.Log(tileSize.ToString());
-
-        GCS diff = target - tileGCS;
+        terrain.ApplyDelayedHeightmapModification();
 
         GCSImagePos = new Vector3();
-
-        GCSImagePos.x = (float)UshiaMaths.lon2x(diff.lon);
-        GCSImagePos.z = (float)UshiaMaths.lat2y(diff.lat);
-
-        Debug.Log(GCSImagePos);
-
-        int xx = (int)(GCSImagePos.x);
-        int zz = (int)(GCSImagePos.z);
-
-        GCSImagePos.y = td.GetHeight(xx, zz) + GetComponent<Transform>().position.y;
+        updatePointPosition();
     }
 
 	void Start ()
@@ -102,9 +83,34 @@ public class hVisualizer : MonoBehaviour
         }
 	}
 
+    void updatePointPosition()
+    {
+        /// Top left point position of the tile in the world.
+        GCS tile = HeightLoader.WorldToTilePos(lon, lat, zoom);
+
+        /// Get the decimals in the interval [0 - 1)
+        tile.lon = tile.lon - System.Math.Truncate(tile.lon);
+        tile.lat = tile.lat - System.Math.Truncate(tile.lat);
+
+        /// Terrain coordinates in Unity starts in bottom left, BUT!
+        /// terrain coordinates in Height map starts in top left
+        GCSImagePos.x =       (float)(tile.lon * 256);
+        GCSImagePos.z = 256 - (float)(tile.lat * 256); /// se we need to subtract that
+        
+        /// Coordinates in height map
+        int xx =       (int)(tile.lon * 256);
+        int zz = 256 - (int)(tile.lat * 256);
+
+        /// Update position
+        GCSImagePos.y = terrain.terrainData.GetHeight(xx, zz) + GetComponent<Transform>().position.y;
+    }
+
     private void OnDrawGizmos()
     {
+        updatePointPosition();
+        Gizmos.color = Color.blue;
+        Gizmos.DrawLine(GCSImagePos, GCSImagePos + new Vector3(0,100,0));
         Gizmos.color = Color.cyan;
-        Gizmos.DrawSphere(GCSImagePos, 10);
+        Gizmos.DrawSphere(GCSImagePos, 2);
     }
 }

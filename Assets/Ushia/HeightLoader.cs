@@ -40,6 +40,13 @@ public static class HeightLoader {
 
     //public class DPoint2 { public double x, y; }
 
+    /// <summary>
+    /// Top left point position of the tile in the world.
+    /// </summary>
+    /// <param name="lon">longitude</param>
+    /// <param name="lat">latitude</param>
+    /// <param name="zoom">zoom [0-18]</param>
+    /// <returns></returns>
     public static GCS WorldToTilePos(double lon, double lat, int zoom)
     {
         GCS p = new GCS();
@@ -72,10 +79,20 @@ public static class HeightLoader {
         return (float)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
     }
 
-    public static GCS zoomSize(int zoom)
+    /// <summary>
+    /// Ground resolution per zoom in meters at a given latitude.
+    /// From: https://mapzen.com/documentation/terrain-tiles/data-sources/
+    /// </summary>
+    /// <param name="lat">latitude</param>
+    /// <param name="zoom">zoom level</param>
+    /// <returns></returns>
+    public static double zoomSize(double lat, int zoom)
     {
-        double pow = Math.Pow(2, zoom);
-        return new GCS(360.0 / pow, 180.0 / pow);
+        double r = Math.PI / 180;
+        double t = lat * r;
+        double a = Math.Cos(t) * 2 * Math.PI * 6378137;
+        double b = 256 * Math.Pow(2, zoom);
+        return a / b;
     }
 
     /// <summary>
@@ -96,7 +113,7 @@ public static class HeightLoader {
             // http://a.tile.stamen.com/terrain-background/12/656/1582.png
             // https://tile.mapzen.com/mapzen/terrain/v1/terrarium/12/656/1582.png?api_key=mapzen-HgL87jY"
 
-            /// Tile that containts the given Longitude and Latitude
+            /// Tile that containts the given Longitude and Latitude.
             GCS tile = WorldToTilePos(target.lon, target.lat, zoom);
             tile.lon = (float)Math.Floor(tile.lon);
             tile.lat = (float)Math.Floor(tile.lat);
