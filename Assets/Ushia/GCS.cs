@@ -29,6 +29,12 @@ public class GCS
         lat = _lat;
     }
 
+    public void set(double _lon, double _lat)
+    {
+        lon = _lon;
+        lat = _lat;
+    }
+
     public GCS copy() { return new GCS(lon, lat); }
 
     public override string ToString() { return "(" + lon + ", " + lat + ")"; }

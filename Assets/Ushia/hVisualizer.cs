@@ -27,14 +27,6 @@ public class hVisualizer : MonoBehaviour
         data.Apply();
         m.SetTexture("_MainTex", data);
 
-        if (GetComponent<Terrain>() == null) return;
-        terrain = GetComponent<Terrain>();
-        float eMinH = -11000;
-        float eMaxH = 9000;
-        float normWaterLvl = (0 - eMinH) / (eMaxH - eMinH);
-        float hDiff = eMaxH - eMinH;
-        float constY = hDiff * normWaterLvl;
-
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, -4400, GetComponent<Transform>().position.z);
         TerrainData td = terrain.terrainData;
         //td.heightmapResolution = 257;
@@ -111,6 +103,7 @@ public class hVisualizer : MonoBehaviour
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(GCSImagePos, GCSImagePos + new Vector3(0,100,0));
         Gizmos.color = Color.cyan;
-        Gizmos.DrawSphere(GCSImagePos, 2);
+        Gizmos.DrawSphere(GCSImagePos, 1f);
+        Gizmos.DrawIcon(GCSImagePos, "UshiaLocation.png", true);
     }
 }

@@ -11,8 +11,18 @@ public static class HeightLoader {
     /// Note: GeoTIFF format tiles are 512x512 sized so request the parent tile’s coordinate. For instance, if you’re looking for a zoom 14 tile then request the parent tile at zoom 13
     public static int width  = 256;
     public static int height = 256;
-    public static int zoom =    14;  // 0 - 18 see http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+    public static int zoom   =  14;  // 0 - 18 see http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+    public static string mapzenAPIKey = "mapzen-HgL87jY";
 
+    /// <summary>
+    /// Validate SSL certificates when using HttpWebRequest
+    /// From: http://answers.unity3d.com/questions/792342/how-to-validate-ssl-certificates-when-using-httpwe.html
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="certificate"></param>
+    /// <param name="chain"></param>
+    /// <param name="sslPolicyErrors"></param>
+    /// <returns></returns>
     public static bool MyRemoteCertificateValidationCallback(System.Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
     {
         bool isOk = true;
@@ -42,6 +52,7 @@ public static class HeightLoader {
 
     /// <summary>
     /// Top left point position of the tile in the world.
+    /// From: http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#C.23
     /// </summary>
     /// <param name="lon">longitude</param>
     /// <param name="lat">latitude</param>
@@ -68,17 +79,6 @@ public static class HeightLoader {
         return p;
     }
 
-    public static double TileToWorldPosX(double tile_x, int zoom)
-    {
-        return ((tile_x / Math.Pow(2.0, zoom) * 360.0) - 180.0);
-    }
-
-    public static double TileToWorldPosY(double tile_y, int zoom)
-    {
-        double n = Math.PI - ((2.0 * Math.PI * tile_y) / Math.Pow(2.0, zoom));
-        return (float)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
-    }
-
     /// <summary>
     /// Ground resolution per zoom in meters at a given latitude.
     /// From: https://mapzen.com/documentation/terrain-tiles/data-sources/
@@ -96,7 +96,7 @@ public static class HeightLoader {
     }
 
     /// <summary>
-    /// returns an array with a heightmap on it
+    /// Returns an array with a heightmap on it
     /// </summary>
     /// <param name="lon">longitude</param>
     /// <param name="lat">latitude</param>
@@ -105,6 +105,7 @@ public static class HeightLoader {
     {
         double [] list = new double[width * height];
         Texture2D tex;
+
         using (WebClient client = new WebClient())
         {
             // Zoom levels (zxy):
@@ -118,39 +119,15 @@ public static class HeightLoader {
             tile.lon = (float)Math.Floor(tile.lon);
             tile.lat = (float)Math.Floor(tile.lat);
 
-            string url = "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + tile.lon.ToString() + "/" + tile.lat.ToString() + ".png?api_key=mapzen-HgL87jY";
-            //string url = "https://tile.mapzen.com/mapzen/terrain/v1/normal/" + zoom.ToString() + "/" + tiles.x.ToString() + "/" + tiles.y.ToString() + ".png?api_key=mapzen-HgL87jY";
+            string url = "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + tile.lon.ToString() + "/" + tile.lat.ToString() + ".png?api_key=" + mapzenAPIKey;
             ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
             byte[] pngData = client.DownloadData(url);
 
             tex = new Texture2D(256, 256);
             tex.LoadImage(pngData);
             tex.Apply();
-
-            //client.DownloadFile(new Uri(url), @"c:\temp\image35.png");
-            //OR 
-            //client.DownloadFileAsync(new System.Uri(url), @"c:\temp\image35.png");
-
-            //byte[] data = tex.GetRawTextureData();
-
-            /*for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    //Debug.Log(i * height + j);
-
-                    //byte r = data[i * height * 3 + j + 0];
-                    //byte g = data[i * height * 3 + j + 1];
-                    //byte b = data[i * height * 3 + j + 2];
-
-                    Color c = tex.GetPixel(i, j);
-
-                    /// decode:
-                    /// h = (red * 256 + green + blue / 256) - 32768
-                    list[i * width + j] = (c.r * 256 + c.g + c.b / 256) - 32768;
-                }
-            }*/
         }
+
         return tex;
     }
 }
