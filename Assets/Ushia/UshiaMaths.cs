@@ -67,4 +67,17 @@ public static class UshiaMaths
     {
         return deg2Rad(aLong) * RADIUS;
     }
+
+    /// <summary>
+    /// How many (integer) times is "floor" in "value"
+    /// </summary>
+    /// <param name="floor"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static int scaledFloor(double floor, double value)
+    {
+        if (value < 0.0)
+            value = value - floor;
+        return (int)(value - (value % floor));
+    }
 }

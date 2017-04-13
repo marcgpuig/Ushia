@@ -103,7 +103,6 @@ public static class HeightLoader {
     /// <returns></returns>
     public static Texture2D getHeight(GCS target, int zoom)
     {
-        double [] list = new double[width * height];
         Texture2D tex;
 
         using (WebClient client = new WebClient())

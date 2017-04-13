@@ -94,7 +94,7 @@ public class hVisualizer : MonoBehaviour
         int zz = 256 - (int)(tile.lat * 256);
 
         /// Update position
-        GCSImagePos.y = terrain.terrainData.GetHeight(xx, zz) + GetComponent<Transform>().position.y;
+        GCSImagePos.y = GetComponent<Terrain>().terrainData.GetHeight(xx, zz) + GetComponent<Transform>().position.y;
     }
 
     private void OnDrawGizmos()
