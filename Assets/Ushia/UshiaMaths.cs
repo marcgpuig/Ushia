@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 public static class UshiaMaths
 {
@@ -79,5 +80,70 @@ public static class UshiaMaths
         if (value < 0.0)
             value = value - floor;
         return (int)(value - (value % floor));
+    }   
+}
+
+public class Int3
+{
+    public int x, y, z;
+
+    public Int3(int _x = 0, int _y = 0, int _z = 0)
+    {
+        set(_x, _y, _z);
+    }
+
+    public void set(int _x = 0, int _y = 0, int _z = 0)
+    {
+        x = _x;
+        y = _y;
+        z = _z;
+    }
+
+    public void set(Int3 i)
+    {
+        x = i.x;
+        y = i.y;
+        z = i.z;
+    }
+
+
+    public static Int3 findChunk(float _x, float _y, float _z, float chunkSize)
+    {
+        return new Int3((int)(UshiaMaths.scaledFloor(chunkSize, _x) / chunkSize), (int)(UshiaMaths.scaledFloor(chunkSize, _y) / chunkSize), (int)(UshiaMaths.scaledFloor(chunkSize, _z) / chunkSize));
+    }
+
+    public static Int3 findChunk(Vector3 vec, float chunkSize)
+    {
+        return findChunk(vec.x, vec.y, vec.z, chunkSize);
+    }
+
+    public void set(Vector3 vec, float chunkSize)
+    {
+        set(findChunk(vec.x, vec.y, vec.z, chunkSize));
+    }
+
+    public void set(float _x, float _y, float _z, float chunkSize)
+    {
+        set(findChunk(_x, _y, _z, chunkSize));
+    }
+
+    public Int3 abs()
+    {
+        return new Int3(Math.Abs(x), Math.Abs(y), Math.Abs(z));
+    }
+
+    public static Int3 operator + (Int3 a, Int3 b)
+    {
+        return new Int3(a.x + b.x, a.y + b.y, a.z + b.z);
+    }
+
+    public static Int3 operator - (Int3 a, Int3 b)
+    {
+        return new Int3(a.x - b.x, a.y - b.y, a.z - b.z);
+    }
+
+    public override string ToString()
+    {
+        return (string)("(" + x + ", " + y + ", " + z + ")");
     }
 }
