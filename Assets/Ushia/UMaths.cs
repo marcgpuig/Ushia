@@ -1,7 +1,10 @@
 ﻿using System;
 using UnityEngine;
 
-public static class UshiaMaths
+/// <summary>
+/// Ushia Maths
+/// </summary>
+public static class UMaths
 {
     /// Earth radius in meters on the equator
     public static double RADIUS = 6378137.0;
@@ -106,10 +109,9 @@ public class Int3
         z = i.z;
     }
 
-
     public static Int3 findChunk(float _x, float _y, float _z, float chunkSize)
     {
-        return new Int3((int)(UshiaMaths.scaledFloor(chunkSize, _x) / chunkSize), (int)(UshiaMaths.scaledFloor(chunkSize, _y) / chunkSize), (int)(UshiaMaths.scaledFloor(chunkSize, _z) / chunkSize));
+        return new Int3((int)(UMaths.scaledFloor(chunkSize, _x) / chunkSize), (int)(UMaths.scaledFloor(chunkSize, _y) / chunkSize), (int)(UMaths.scaledFloor(chunkSize, _z) / chunkSize));
     }
 
     public static Int3 findChunk(Vector3 vec, float chunkSize)
@@ -132,12 +134,12 @@ public class Int3
         return new Int3(Math.Abs(x), Math.Abs(y), Math.Abs(z));
     }
 
-    public static Int3 operator + (Int3 a, Int3 b)
+    public static Int3 operator +(Int3 a, Int3 b)
     {
         return new Int3(a.x + b.x, a.y + b.y, a.z + b.z);
     }
 
-    public static Int3 operator - (Int3 a, Int3 b)
+    public static Int3 operator -(Int3 a, Int3 b)
     {
         return new Int3(a.x - b.x, a.y - b.y, a.z - b.z);
     }

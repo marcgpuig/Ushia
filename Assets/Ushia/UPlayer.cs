@@ -4,24 +4,42 @@ using System.Linq;
 using UnityEngine;
 
 [ExecuteInEditMode]
-public class UshiaPlayer : MonoBehaviour
+public class UPlayer : MonoBehaviour
 {
+    [Header("Chunk parameters:")]
     public float chunkSize = 1;
     public int chunkAdjacentLayers = 1;
-    public double startLon = 0, startLat = 0;
-    public GCS worldStartPoint = new GCS();
+    public int maxResidualChunks = 2;
 
+    [Header("World Location:")]
+    public double startLon = 0;
+    public double startLat = 0;
+    public int zoom = 14;
+    private USlippyTile startTile;
+    private GCS worldStartPoint = new GCS();
+
+    [Header("Clear:")]
     public bool _clearHashMap = false;
+
+    /// Debug Gizmos
+    [Header("Debug:")]
+    public bool debugChunks = true;
+    public bool debugDistances = true;
+    public bool debugPositions = true;
 
     private Hashtable map = new Hashtable();
     private int lastChunkX = 0;
     private int lastChunkY = 0;
 
-    public int maxResidualChunks = 2;
-
     void Start ()
     {
+        init();
+    }
+
+    public void init()
+    {
         worldStartPoint.set(startLon, startLat);
+        startTile = new USlippyTile(startLon, startLat, zoom);
         clearHashMap();
     }
 
@@ -36,8 +54,8 @@ public class UshiaPlayer : MonoBehaviour
 
     public bool playerIsInNewChunk()
     {
-        int x = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-        int y = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+        int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
+        int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
         if (lastChunkX != x || lastChunkY != y)
         {
             lastChunkX = x;
@@ -48,43 +66,18 @@ public class UshiaPlayer : MonoBehaviour
     }
 
     /// <summary>
-    /// Returns the quadrants number given the desired adjacent layers
+    /// Returns the total quadrants number given the desired 
+    /// (Chebyshov distance) adjacent layers.
     /// </summary>
     public int nQuadrants()
     {
         return (int)System.Math.Pow(((2 * chunkAdjacentLayers) + 1), 2);
     }
 
-    private void removeResidualChunksOld()
-    {
-        int totalAvailableChunks = nQuadrants() + maxResidualChunks;
-        SortedDictionary<double, string> distances = new SortedDictionary<double, string>();
-        float halfHypot = (float)System.Math.Sqrt(System.Math.Pow(chunkSize, 2) + System.Math.Pow(chunkSize, 2));
-        foreach (DictionaryEntry p in map)
-        {
-            GameObject gameObj = (GameObject)p.Value;
-            double dist = Vector3.Distance(GetComponent<Transform>().position, gameObj.transform.position + new Vector3(halfHypot, 0, halfHypot));
-            while (distances.ContainsKey(dist))
-                dist += 0.0001;
-            distances.Add(dist, (string)p.Key);
-        }
-
-        //List<Order> SortedList = objListOrder.OrderByDescending(o => o.OrderDate).ToList();
-
-        int i = map.Count;
-        foreach (KeyValuePair<double, string> d in distances.Reverse())
-        {
-            if (i <= totalAvailableChunks) return;
-            string value = d.Value;
-            if (map.ContainsKey(d.Value))
-            {
-                DestroyImmediate((GameObject)map[value]);
-                map.Remove(d.Value);
-            }
-            i--;
-        }
-    }
-
+    /// <summary>
+    /// Class for store the (Chebyshov) distance from the player 
+    /// to each chunk and then remove the farest chunk/s.
+    /// </summary>
     private class distChunk
     {
         public int dist;
@@ -100,7 +93,6 @@ public class UshiaPlayer : MonoBehaviour
     {
         int totalAvailableChunks = nQuadrants() + maxResidualChunks;
         List<distChunk> distances = new List<distChunk>();
-        float halfHypot = (float)(System.Math.Sqrt(System.Math.Pow(chunkSize, 2) + System.Math.Pow(chunkSize, 2))/2.0f);
 
         foreach (DictionaryEntry p in map)
         {
@@ -138,17 +130,20 @@ public class UshiaPlayer : MonoBehaviour
         return "Terrain_(" + x + "," + y + ")";
     }
 
-    public GameObject createTerrain(string key)
+    public GameObject createTerrain(USlippyTile tile, string key)
     {
         GameObject t = new GameObject(key);
 
         TerrainData tData = new TerrainData();
-        tData.size = new Vector3(chunkSize, chunkSize, chunkSize);
+        tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8);
 
         TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
         Terrain tComp = t.AddComponent<Terrain>();
         tColliderComp.terrainData = tData;
         tComp.terrainData = tData;
+
+        t.AddComponent<UTerrain>();
+        t.GetComponent<UTerrain>().genHeight(tile);
 
         return t;
     }
@@ -164,22 +159,26 @@ public class UshiaPlayer : MonoBehaviour
         if(playerIsInNewChunk())
         {
             /// Chunk Position
-            int x = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-            int y = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+            int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
+            int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
 
-            /// Chunk 
+            /// Chunk Number (id)
             int xNum = (int)(x / chunkSize);
             int yNum = (int)(y / chunkSize);
 
-            /// Sapw all the new needed chunks
+            /// Starting tile
+            startTile = new USlippyTile(startLon, startLat, zoom);
+
+            /// Sapwn all the new needed chunks
             for (int i = -chunkAdjacentLayers; i <= chunkAdjacentLayers; i++)
             {
                 for (int j = -chunkAdjacentLayers; j <= chunkAdjacentLayers; j++)
                 {
-                    string key = genTerrainName(xNum + i, yNum + j);
+                    USlippyTile sTile = new USlippyTile(xNum + i + startTile.x, yNum + j + startTile.y, zoom);
+                    string key = genTerrainName(sTile.x, sTile.y);
                     if (!map.ContainsKey(key))
                     {
-                        GameObject t = createTerrain(key);
+                        GameObject t = createTerrain(sTile, key);
 
                         Vector3 pos = new Vector3();
                         pos.Set(x + (i * chunkSize), 0, y + (j * chunkSize));
@@ -189,8 +188,7 @@ public class UshiaPlayer : MonoBehaviour
                     }
                 }
             }
-
-            /// After spawning the new chunks we need to remove the olders that we dont need
+            /// After spawning the new chunks, remove the olders that we dont need
             removeResidualChunks();
         }
     }
@@ -221,8 +219,8 @@ public class UshiaPlayer : MonoBehaviour
 
     public void drawPoints(float size = 1)
     {
-        int x = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-        int y = UshiaMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+        int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
+        int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
 
         for (int i = -chunkAdjacentLayers; i <= chunkAdjacentLayers; i++)
         {
@@ -236,9 +234,7 @@ public class UshiaPlayer : MonoBehaviour
 
     public void drawDistances()
     {
-        int totalAvailableChunks = nQuadrants() + maxResidualChunks;
         float halfHypot = (float)(chunkSize/2.0f);
-
         foreach (DictionaryEntry p in map)
         {
             GameObject gameObj = (GameObject)p.Value;
@@ -248,12 +244,21 @@ public class UshiaPlayer : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.green;
-        renderRects();
-        Gizmos.color = Color.cyan;
-        drawDistances();
-        Gizmos.color = Color.blue;
-        drawPoints(chunkSize * 0.025f);
+        if (debugChunks)
+        {
+            Gizmos.color = Color.green;
+            renderRects();
+        }
+        if (debugDistances)
+        {
+            Gizmos.color = Color.cyan;
+            drawDistances();
+        }
+        if (debugPositions)
+        {
+            Gizmos.color = Color.blue;
+            drawPoints(chunkSize * 0.025f);
+        }
         Gizmos.DrawIcon(GetComponent<Transform>().position, "UshiaLocation.png");
     }
 }

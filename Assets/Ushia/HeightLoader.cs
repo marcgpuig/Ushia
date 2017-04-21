@@ -48,8 +48,6 @@ public static class HeightLoader {
         return isOk;
     }
 
-    //public class DPoint2 { public double x, y; }
-
     /// <summary>
     /// Top left point position of the tile in the world.
     /// From: http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#C.23
@@ -118,7 +116,33 @@ public static class HeightLoader {
             tile.lon = (float)Math.Floor(tile.lon);
             tile.lat = (float)Math.Floor(tile.lat);
 
+            // TODO change tile.lon and tile.lat for chunk.x and chunk.z
+            //Int3 chunk = mapZenChunk(target.lon, target.lat, zoom);
+
             string url = "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + tile.lon.ToString() + "/" + tile.lat.ToString() + ".png?api_key=" + mapzenAPIKey;
+            ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
+            byte[] pngData = client.DownloadData(url);
+
+            tex = new Texture2D(256, 256);
+            tex.LoadImage(pngData);
+            tex.Apply();
+        }
+
+        return tex;
+    }
+
+    /// <summary>
+    /// Returns an array with a heightmap on it
+    /// </summary>
+    /// <param name="tile">tile x, y and zoom</param>
+    /// <returns></returns>
+    public static Texture2D getHeight(USlippyTile tile)
+    {
+        Texture2D tex;
+
+        using (WebClient client = new WebClient())
+        {
+            string url = tile.getMapzenURLTerranium(mapzenAPIKey);
             ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
             byte[] pngData = client.DownloadData(url);
 

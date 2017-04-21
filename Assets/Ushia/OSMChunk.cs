@@ -48,8 +48,8 @@ public class OSMChunk
 
     public void calculateDimensions()
     {
-        width = UshiaMaths.lon2x(maxLon) - UshiaMaths.lon2x(minLon);
-        height = UshiaMaths.lat2y(maxLat) - UshiaMaths.lat2y(minLat);
+        width = UMaths.lon2x(maxLon) - UMaths.lon2x(minLon);
+        height = UMaths.lat2y(maxLat) - UMaths.lat2y(minLat);
     }
 
     // constructors
@@ -87,15 +87,15 @@ public class OSMChunk
         nodes = parser.getNodes();
 
         /// normalize
-        double minX = UshiaMaths.lon2x(minLon);
-        double minY = UshiaMaths.lat2y(minLat);
+        double minX = UMaths.lon2x(minLon);
+        double minY = UMaths.lat2y(minLat);
 
         /// Mercator
         foreach (DictionaryEntry e in nodes)
         {
             OSMNode n = (OSMNode)e.Value;
-            n.pos.x = (float)UshiaMaths.lon2x(n.lon) - (float)minX;
-            n.pos.z = (float)UshiaMaths.lat2y(n.lat) - (float)minY;
+            n.pos.x = (float)UMaths.lon2x(n.lon) - (float)minX;
+            n.pos.z = (float)UMaths.lat2y(n.lat) - (float)minY;
         }
         return true;
     }

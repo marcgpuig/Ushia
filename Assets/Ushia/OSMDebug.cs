@@ -7,6 +7,7 @@ public class OSMDebug : MonoBehaviour
 {
     public string filePath;
     public OSMChunk chunk;
+    public bool reload = false;
 
     [Range(0.0f, 10.5f)]
     public float nodeSize = 0.1f;
@@ -15,18 +16,26 @@ public class OSMDebug : MonoBehaviour
 
     void Start ()
     {
-        chunk = new OSMChunk();
+        init(new OSMChunk());
+    }
+
+    void init(OSMChunk _chunk)
+    {
+        chunk = _chunk;
         chunk.loadOSM(filePath);
         chunk.loadNodes();
         chunk.loadWays();
 
         sNodes = new Vector3(nodeSize, nodeSize, nodeSize);
-        /*foreach (OSMNode n in chunk.nodes)
+    }
+
+    private void Update()
+    {
+        if(reload)
         {
-            GameObject c = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            c.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-            c.transform.position = n.pos;
-        }*/
+            init(new OSMChunk());
+            reload = false;
+        }
     }
 
     private void OnDrawGizmosSelected()
@@ -123,6 +132,10 @@ public class OSMDebug : MonoBehaviour
 
                 Gizmos.color = old;
             }
+        }
+        else if (chunk == null)
+        {
+            Debug.Log("Debug chunk is null");
         }
     }
 }
