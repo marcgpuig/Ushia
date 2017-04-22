@@ -135,7 +135,7 @@ public class UPlayer : MonoBehaviour
         GameObject t = new GameObject(key);
 
         TerrainData tData = new TerrainData();
-        tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8);
+        tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8); // don't know why 8, but terrain its 8 times bigger than this numbers
 
         TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
         Terrain tComp = t.AddComponent<Terrain>();
@@ -143,7 +143,7 @@ public class UPlayer : MonoBehaviour
         tComp.terrainData = tData;
 
         t.AddComponent<UTerrain>();
-        t.GetComponent<UTerrain>().genHeight(tile);
+        t.GetComponent<UTerrain>().init(tile);
 
         return t;
     }

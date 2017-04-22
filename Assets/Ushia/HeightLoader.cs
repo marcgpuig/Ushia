@@ -12,7 +12,6 @@ public static class HeightLoader {
     public static int width  = 256;
     public static int height = 256;
     public static int zoom   =  14;  // 0 - 18 see http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-    public static string mapzenAPIKey = "mapzen-HgL87jY";
 
     /// <summary>
     /// Validate SSL certificates when using HttpWebRequest
@@ -119,7 +118,30 @@ public static class HeightLoader {
             // TODO change tile.lon and tile.lat for chunk.x and chunk.z
             //Int3 chunk = mapZenChunk(target.lon, target.lat, zoom);
 
-            string url = "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + tile.lon.ToString() + "/" + tile.lat.ToString() + ".png?api_key=" + mapzenAPIKey;
+            string url = "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + tile.lon.ToString() + "/" + tile.lat.ToString() + ".png?api_key=" + UVariables.mapzenAPIKey;
+            ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
+            byte[] pngData = client.DownloadData(url);
+
+            tex = new Texture2D(256, 256);
+            tex.LoadImage(pngData);
+            tex.Apply();
+        }
+
+        return tex;
+    }
+
+    /// <summary>
+    /// Returns a Texture2D with a heightmap on it
+    /// </summary>
+    /// <param name="tile">tile x, y and zoom</param>
+    /// <returns></returns>
+    public static Texture2D getHeight(USlippyTile tile)
+    {
+        Texture2D tex;
+
+        using (WebClient client = new WebClient())
+        {
+            string url = tile.getMapzenURLTerranium(UVariables.mapzenAPIKey);
             ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
             byte[] pngData = client.DownloadData(url);
 
@@ -136,21 +158,15 @@ public static class HeightLoader {
     /// </summary>
     /// <param name="tile">tile x, y and zoom</param>
     /// <returns></returns>
-    public static Texture2D getHeight(USlippyTile tile)
+    public static byte[] getByteHeight(USlippyTile tile)
     {
-        Texture2D tex;
-
+        byte[] pngData;
         using (WebClient client = new WebClient())
         {
-            string url = tile.getMapzenURLTerranium(mapzenAPIKey);
+            string url = tile.getMapzenURLTerranium(UVariables.mapzenAPIKey);
             ServicePointManager.ServerCertificateValidationCallback = MyRemoteCertificateValidationCallback;
-            byte[] pngData = client.DownloadData(url);
-
-            tex = new Texture2D(256, 256);
-            tex.LoadImage(pngData);
-            tex.Apply();
+            pngData = client.DownloadData(url);
         }
-
-        return tex;
+        return pngData;
     }
 }
