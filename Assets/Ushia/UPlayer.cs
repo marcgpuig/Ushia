@@ -16,7 +16,6 @@ public class UPlayer : MonoBehaviour
     public double startLat = 0;
     public int zoom = 14;
     private USlippyTile startTile;
-    private GCS worldStartPoint = new GCS();
 
     [Header("Clear:")]
     public bool _clearHashMap = false;
@@ -38,7 +37,6 @@ public class UPlayer : MonoBehaviour
 
     public void init()
     {
-        worldStartPoint.set(startLon, startLat);
         startTile = new USlippyTile(startLon, startLat, zoom);
         clearHashMap();
     }
@@ -162,11 +160,12 @@ public class UPlayer : MonoBehaviour
             int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
             int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
 
-            /// Chunk Number (id)
+            /// Chunk number in the world starting from world position 0,0
             int xNum = (int)(x / chunkSize);
             int yNum = (int)(y / chunkSize);
 
             /// Starting tile
+            // Only for debug
             startTile = new USlippyTile(startLon, startLat, zoom);
 
             /// Sapwn all the new needed chunks
@@ -174,7 +173,11 @@ public class UPlayer : MonoBehaviour
             {
                 for (int j = -chunkAdjacentLayers; j <= chunkAdjacentLayers; j++)
                 {
-                    USlippyTile sTile = new USlippyTile(xNum + i + startTile.x, yNum + j + startTile.y, zoom);
+                    USlippyTile sTile = new USlippyTile(xNum + i + startTile.x, yNum + j + startTile.y , zoom);
+                    
+                    /// This line fix that world is flipped upside down
+                    sTile.y = startTile.y + (startTile.y - sTile.y);
+
                     string key = genTerrainName(sTile.x, sTile.y);
                     if (!map.ContainsKey(key))
                     {

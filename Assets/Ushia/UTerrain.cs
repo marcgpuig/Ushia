@@ -20,7 +20,11 @@ public class UTerrain : MonoBehaviour {
         loader = new UTerrainLoader();
         loader.tile = tile;
         loader.Start();
-        
+    }
+
+    public void fixBorderX(Terrain t)
+    {
+
     }
 
     private void Update()
@@ -55,20 +59,22 @@ public class UTerrain : MonoBehaviour {
 
         td.size = new Vector3(td.size.x, terrainHeight, td.size.z);
 
-        float[,] heights = new float[td.alphamapWidth, td.alphamapHeight];
+
+        // TODO alphamapHeight is incorrect!!!!!! 
+        float[,] heights = new float[td.alphamapWidth, td.alphamapWidth];
 
         for (int i = 0; i < td.alphamapWidth; i++)
         {
-            for (int j = 0; j < td.alphamapHeight; j++)
+            for (int j = 0; j < td.alphamapWidth; j++)
             {
                 Color c = data.GetPixel(i, j);
                 float r = c.r;
                 float g = c.g;
                 float b = c.b;
-                heights[(td.alphamapHeight - 1) - j, i] = (r * 256 + g + b / 256) / 256;
+                heights[j, i] = (r * 256 + g + b / 256) / 256;
 
                 /// bad border (?)
-                if (i == 256) heights[(td.alphamapHeight - 1) - j, i] = heights[(td.alphamapHeight - 1) - j, 255];
+                if (i == 256) heights[j, i] = heights[j, 255];
             }
             /// bad border (?)
             heights[0, i] = heights[1, i];
