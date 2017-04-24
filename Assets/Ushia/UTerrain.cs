@@ -59,8 +59,6 @@ public class UTerrain : MonoBehaviour {
 
         td.size = new Vector3(td.size.x, terrainHeight, td.size.z);
 
-
-        // TODO alphamapHeight is incorrect!!!!!! 
         float[,] heights = new float[td.alphamapWidth, td.alphamapWidth];
 
         for (int i = 0; i < td.alphamapWidth; i++)
@@ -74,10 +72,10 @@ public class UTerrain : MonoBehaviour {
                 heights[j, i] = (r * 256 + g + b / 256) / 256;
 
                 /// bad border (?)
-                if (i == 256) heights[j, i] = heights[j, 255];
+                if (i == td.alphamapWidth-1) heights[j, i] = heights[j, td.alphamapWidth-2];
             }
             /// bad border (?)
-            heights[0, i] = heights[1, i];
+            heights[td.alphamapWidth-1, i] = heights[td.alphamapWidth-2, i];
         }
 
         td.SetHeights(0, 0, heights);
