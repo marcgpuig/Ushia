@@ -50,6 +50,11 @@ public class UPlayer : MonoBehaviour
         map.Clear();
     }
 
+    public Hashtable getMap()
+    {
+        return map;
+    }
+
     public bool playerIsInNewChunk()
     {
         int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
@@ -141,7 +146,7 @@ public class UPlayer : MonoBehaviour
         tComp.terrainData = tData;
 
         t.AddComponent<UTerrain>();
-        t.GetComponent<UTerrain>().init(tile);
+        t.GetComponent<UTerrain>().init(tile, this);
 
         return t;
     }
@@ -196,6 +201,7 @@ public class UPlayer : MonoBehaviour
         }
     }
 
+    /// GIZMOS ////////////////////////////////////////////////////////////////////////////
     void drawRect(Vector3 pos, float size)
     {
         Gizmos.DrawLine(pos, pos + new Vector3(size, 0, 0));
