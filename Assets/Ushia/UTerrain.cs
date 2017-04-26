@@ -18,6 +18,7 @@ public class UTerrain : MonoBehaviour {
 
     private bool borderXFixed = false;
     private bool borderYFixed = false;
+    //private bool lastBorderFixed = false;
 
     private Terrain[] neighbors; /// left, top, right, bottom
 
@@ -124,20 +125,22 @@ public class UTerrain : MonoBehaviour {
 
     private void Update()
     {
-
+        /// Deletes the terrain if the reference to player or tile desapears
+        /// this fixes problemes in editor when recompiling the code
         if (player == null || tile == null)
         {
             destroy();
         }
 
+        /// Check if the thread has finished his work
         if(loader != null)
         {
             if (loader.Update())
             {
+                /// Here the thread have finished
                 genHeight();
                 generated = true;
                 loader = null;
-
             }
         }
 
@@ -157,6 +160,7 @@ public class UTerrain : MonoBehaviour {
                     }
                 }
             }
+
             if (!borderYFixed)
             {
                 Hashtable map = player.getMap();
@@ -179,7 +183,6 @@ public class UTerrain : MonoBehaviour {
         terrain = GetComponent<Terrain>();
 
         Texture2D data = new Texture2D(256, 256);
-        //data.LoadImage(HeightLoader.getByteHeight(tile));
 
         byte[] rawData = new byte[256 * 256];
         rawData = loader.heightData;
@@ -205,10 +208,10 @@ public class UTerrain : MonoBehaviour {
                 float b = c.b;
                 heights[j, i] = (r * 256 + g + b / 256) / 256;
 
-                /// bad border (?)
+                /// This will merge with the border of another terrain
                 if (i == td.alphamapWidth-1) heights[j, i] = heights[j, td.alphamapWidth-2];
             }
-            /// bad border (?)
+            /// This will merge with the border of another terrain
             heights[td.alphamapWidth-1, i] = heights[td.alphamapWidth-2, i];
         }
 
