@@ -145,6 +145,8 @@ public class UPlayer : MonoBehaviour
         tColliderComp.terrainData = tData;
         tComp.terrainData = tData;
 
+        tComp.materialType = Terrain.MaterialType.BuiltInLegacySpecular;
+
         t.AddComponent<UTerrain>();
         t.GetComponent<UTerrain>().init(tile, this);
 

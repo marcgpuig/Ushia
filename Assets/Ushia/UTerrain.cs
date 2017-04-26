@@ -19,13 +19,13 @@ public class UTerrain : MonoBehaviour {
     private bool borderXFixed = false;
     private bool borderYFixed = false;
 
-    private Terrain[] neightbors; /// left, top, right, bottom
+    private Terrain[] neighbors; /// left, top, right, bottom
 
     public void init(USlippyTile _tile, UPlayer pl)
     {
         terrain = GetComponent<Terrain>();
         loader = new UTerrainLoader();
-        neightbors = new Terrain[4];
+        neighbors = new Terrain[4];
         tile = _tile;
         loader.tile = _tile;
         loader.Start();
@@ -33,40 +33,40 @@ public class UTerrain : MonoBehaviour {
     }
 
     /// <summary>
-    /// Set terrain neightbors that fixes the LOD
+    /// Set terrain neighbors that fixes the LOD
     /// </summary>
     private void updateNeightbors()
     {
         /// left, top, right, bottom
-        GetComponent<Terrain>().SetNeighbors(neightbors[0], neightbors[1], neightbors[2], neightbors[3]);
+        GetComponent<Terrain>().SetNeighbors(neighbors[0], neighbors[1], neighbors[2], neighbors[3]);
     }
 
     public void setLeftTerrain(Terrain t)
     {
-        neightbors[0] = t;
+        neighbors[0] = t;
         updateNeightbors();
     }
 
     public void setTopTerrain(Terrain t)
     {
-        neightbors[1] = t;
+        neighbors[1] = t;
         updateNeightbors();
     }
 
     public void setRightTerrain(Terrain t)
     {
-        neightbors[2] = t;
+        neighbors[2] = t;
         updateNeightbors();
     }
 
     public void setBottomTerrain(Terrain t)
     {
-        neightbors[3] = t;
+        neighbors[3] = t;
         updateNeightbors();
     }
 
     /// <summary>
-    /// 
+    /// Fixes the Northern borders
     /// </summary>
     /// <param name="t">Northern (Top) terrain</param>
     public void fixBorderX(Terrain t)
@@ -79,7 +79,7 @@ public class UTerrain : MonoBehaviour {
         TerrainData data2 = t.terrainData;
         float[,] heights2 = data2.GetHeights(0, 0, data.alphamapWidth, data.alphamapWidth);
 
-        /// set the terrain neightbors
+        /// set the terrain neighbors
         setTopTerrain(t);
         t.GetComponent<UTerrain>().setBottomTerrain(GetComponent<Terrain>());
 
@@ -92,7 +92,7 @@ public class UTerrain : MonoBehaviour {
     }
 
     /// <summary>
-    /// 
+    /// Fixes the Eastern borders
     /// </summary>
     /// <param name="t">Eastern (Right) terrain</param>
     public void fixBorderY(Terrain t)
@@ -105,7 +105,7 @@ public class UTerrain : MonoBehaviour {
         TerrainData data2 = t.terrainData;
         float[,] heights2 = data2.GetHeights(0, 0, data.alphamapWidth, data.alphamapWidth);
 
-        /// set the terrain neightbors
+        /// set the terrain neighbors
         setRightTerrain(t);
         t.GetComponent<UTerrain>().setLeftTerrain(GetComponent<Terrain>());
 
