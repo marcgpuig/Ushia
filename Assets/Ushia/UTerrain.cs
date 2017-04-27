@@ -18,7 +18,8 @@ public class UTerrain : MonoBehaviour {
 
     private bool borderXFixed = false;
     private bool borderYFixed = false;
-    //private bool lastBorderFixed = false;
+    private bool edgeFixed = false;
+    private bool fullFixed = false;
 
     private Terrain[] neighbors; /// left, top, right, bottom
 
@@ -34,12 +35,21 @@ public class UTerrain : MonoBehaviour {
     }
 
     /// <summary>
+    /// Deletes this Terrain
+    /// </summary>
+    public void destroy()
+    {
+        DestroyImmediate(transform.root.gameObject);
+    }
+
+    /// <summary>
     /// Set terrain neighbors that fixes the LOD
     /// </summary>
     private void updateNeightbors()
     {
         /// left, top, right, bottom
         GetComponent<Terrain>().SetNeighbors(neighbors[0], neighbors[1], neighbors[2], neighbors[3]);
+        GetComponent<Terrain>().Flush();
     }
 
     public void setLeftTerrain(Terrain t)
@@ -118,9 +128,25 @@ public class UTerrain : MonoBehaviour {
         GetComponent<Terrain>().ApplyDelayedHeightmapModification();
     }
 
-    public void destroy()
+    /// <summary>
+    /// Fixes the (diagonal) Northeastern edge
+    /// </summary>
+    /// <param name="t">Eastern (Right) terrain</param>
+    public void fixEdge(Terrain t)
     {
-        DestroyImmediate(transform.root.gameObject);
+        /// get this Terrain's height data
+        TerrainData data = GetComponent<Terrain>().terrainData;
+        float[,] heights = data.GetHeights(0, 0, data.alphamapWidth, data.alphamapWidth);
+
+        /// get the other Terrain's height data
+        TerrainData data2 = t.terrainData;
+        float[,] heights2 = data2.GetHeights(0, 0, data.alphamapWidth, data.alphamapWidth);
+
+        heights[data.alphamapWidth - 1, data.alphamapWidth - 1] = heights2[0, 0];
+
+        /// Apply the border height changes to the terrain data and then update the terrain
+        data.SetHeights(0, 0, heights);
+        GetComponent<Terrain>().ApplyDelayedHeightmapModification();
     }
 
     private void Update()
@@ -144,8 +170,14 @@ public class UTerrain : MonoBehaviour {
             }
         }
 
-        if(generated && tile != null)
+        /// fullFixed    - all the fixes has been applied (this one is the first because 
+        ///                is the most restrictive and there is no need to process the 
+        ///                other comparasions)
+        /// generated    - guarantee that all the data info from this terrain is fully loaded
+        /// tile != null - fixes errors in editor when recompiling the code
+        if (!fullFixed && generated && tile != null)
         {
+            /// if X border is not fixed, fix it
             if (!borderXFixed)
             {
                 Hashtable map = player.getMap();
@@ -161,6 +193,7 @@ public class UTerrain : MonoBehaviour {
                 }
             }
 
+            /// if Y border is not fixed, fix it
             if (!borderYFixed)
             {
                 Hashtable map = player.getMap();
@@ -174,6 +207,28 @@ public class UTerrain : MonoBehaviour {
                         borderYFixed = true;
                     }
                 }
+            }
+
+            /// if the farest edge from (0,0) is not fixed, fix it
+            if (!edgeFixed)
+            {
+                Hashtable map = player.getMap();
+                string rightTerrainKey = UPlayer.genTerrainName(tile.x + 1, tile.y - 1);
+                if (map.ContainsKey(rightTerrainKey))
+                {
+                    GameObject terrain = (GameObject)map[rightTerrainKey];
+                    if (terrain.GetComponent<UTerrain>().generated)
+                    {
+                        fixEdge(terrain.GetComponent<Terrain>());
+                        edgeFixed = true;
+                    }
+                }
+            }
+            
+            if(borderXFixed && borderYFixed && edgeFixed)
+            {
+                fullFixed = true;
+                // TODO: throw a thread and save the height in disk.
             }
         }
     }
