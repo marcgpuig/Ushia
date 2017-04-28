@@ -243,7 +243,6 @@ public class UTerrain : MonoBehaviour {
         rawData = loader.heightData;
         data.LoadImage(rawData);
         data.Apply();
-
         GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, terrainDepth, GetComponent<Transform>().position.z);
         TerrainData td = terrain.terrainData;
         td.alphamapResolution = 257;
