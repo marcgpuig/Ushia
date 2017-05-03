@@ -83,7 +83,7 @@ public static class UMaths
         if (value < 0.0)
             value = value - floor;
         return (int)(value - (value % floor));
-    }   
+    }
 }
 
 public class Int3

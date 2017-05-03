@@ -3,23 +3,25 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class OSMChunk
+[ExecuteInEditMode]
+public class OSMChunk : MonoBehaviour
 {
-    OSMParser parser = null;
-    
+    private OSMParser parser = null;
+    public USlippyTile tile  = null;
+    private UPlayer player;
+
     /// bounds
     private double minLat = 0;
     private double minLon = 0;
     private double maxLat = 0;
     private double maxLon = 0;
-
-    public Vector3 virtualWorldPos = Vector3.zero;
+    
     public double width = 0, height = 0; // x and z unity coordinates
 
-    /// Here is explained why to use Hashtable
+    /// here is explained why to use Hashtable
     /// http://cc.davelozinski.com/c-sharp/fastest-collection-for-string-lookups
     public Hashtable nodes = null;
-    public Hashtable ways = null;
+    public Hashtable ways  = null;
 
     /// geters
     public double getMinLat() { return minLat; }
@@ -38,6 +40,14 @@ public class OSMChunk
     public void setMaxLat(double _maxLat) { maxLat = _maxLat; }
     public void setMaxLon(double _maxLon) { maxLon = _maxLon; }
 
+    public void init(USlippyTile t, UPlayer p)
+    {
+        tile = t;
+        player = p;
+        parser = new OSMParser(tile);
+        parser.Start();
+    }
+
     public void setBounds(double _minLat, double _minLon, double _maxLat, double _maxLon)
     {
         setMinLat(_minLat);
@@ -52,10 +62,6 @@ public class OSMChunk
         height = UMaths.lat2y(maxLat) - UMaths.lat2y(minLat);
     }
 
-    // constructors
-    public OSMChunk() { }
-    public OSMChunk(string filePath) { loadOSM(filePath); }
-
     private bool isParserInitialized() { return parser != null; }
 
     private void loadBounds()
@@ -67,6 +73,7 @@ public class OSMChunk
         calculateDimensions();
     }
 
+    /*
     public bool loadOSM(string filePath)
     {
         // load OSM data
@@ -80,11 +87,12 @@ public class OSMChunk
 
         return true;
     }
+    */
 
-    public bool loadNodes()
+    private bool loadNodes()
     {
         if (!isParserInitialized()) return false;
-        nodes = parser.getNodes();
+        nodes = parser.nodes;
 
         /// normalize
         double minX = UMaths.lon2x(minLon);
@@ -100,10 +108,29 @@ public class OSMChunk
         return true;
     }
 
-    public bool loadWays()
+    private bool loadWays()
     {
         if (!isParserInitialized()) return false;
-        ways = parser.getWays();
+        ways = parser.ways;
         return true;
+    }
+
+    private void Update()
+    {
+        /// check if the thread has finished his work
+        if (parser != null)
+        {
+            if (parser.Update())
+            {
+                /// here the thread have finished
+                /// lets get the data from the parser
+                nodes = parser.nodes;
+                ways = parser.ways;
+
+                /// set the parser to null to ignore it one time has finished
+                parser = null;
+            }
+        }
+
     }
 }

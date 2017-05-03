@@ -16,15 +16,22 @@ public class OSMDebug : MonoBehaviour
 
     void Start ()
     {
-        init(new OSMChunk());
+        if (chunk != null)
+        {
+            init(chunk);
+        }
+        else
+        {
+            init(new OSMChunk());
+        }
     }
 
     void init(OSMChunk _chunk)
     {
         chunk = _chunk;
-        chunk.loadOSM(filePath);
+        /*chunk.loadOSM(filePath);
         chunk.loadNodes();
-        chunk.loadWays();
+        chunk.loadWays();*/
 
         sNodes = new Vector3(nodeSize, nodeSize, nodeSize);
     }
@@ -44,10 +51,10 @@ public class OSMDebug : MonoBehaviour
         if (chunk != null)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(chunk.virtualWorldPos, chunk.virtualWorldPos + new Vector3((float)chunk.width, 0, 0));
-            Gizmos.DrawLine(chunk.virtualWorldPos, chunk.virtualWorldPos + new Vector3(0, 0, (float)chunk.height));
-            Gizmos.DrawLine(chunk.virtualWorldPos + new Vector3((float)chunk.width, 0, 0), chunk.virtualWorldPos + new Vector3((float)chunk.width, 0, (float)chunk.height));
-            Gizmos.DrawLine(chunk.virtualWorldPos + new Vector3(0, 0, (float)chunk.height), chunk.virtualWorldPos + new Vector3((float)chunk.width, 0, (float)chunk.height));
+            Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3((float)chunk.width, 0, 0));
+            Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3(0, 0, (float)chunk.height));
+            Gizmos.DrawLine(chunk.transform.position + new Vector3((float)chunk.width, 0, 0) , chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
+            Gizmos.DrawLine(chunk.transform.position + new Vector3(0, 0, (float)chunk.height), chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
         }
     }
 

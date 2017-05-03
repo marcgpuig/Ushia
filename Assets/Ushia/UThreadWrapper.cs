@@ -1,10 +1,13 @@
 ﻿using System.Collections;
+using System;
 
 public class UThreadWrapper
 {
     private bool m_IsDone = false;
     private object m_Handle = new object();
     private System.Threading.Thread m_Thread = null;
+
+    public DateTime startTime, endTime;
 
     public bool IsDone
     {
@@ -61,7 +64,9 @@ public class UThreadWrapper
 
     private void Run()
     {
+        startTime = DateTime.Now;
         ThreadFunction();
+        endTime = DateTime.Now;
         IsDone = true;
     }
 }

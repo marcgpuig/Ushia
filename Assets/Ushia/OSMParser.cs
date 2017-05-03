@@ -1,21 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Xml;
 
-public class OSMParser
+using UnityEngine;
+
+public class OSMParser : UThreadWrapper
 {
-    XmlDocument xmlData = null;
+    private XmlDocument xmlData = null;
+    private USlippyTile tile = null;
 
-    public OSMParser()
-    {
-        xmlData = new XmlDocument();
-    }
+    public Hashtable nodes = null;
+    public Hashtable ways = null;
+    public Hashtable roads = null;
 
-    public void load(string rawData)
+    /*public void load(string rawData)
     {
         xmlData.LoadXml(rawData);
-    }
+    }*/
+
+    public OSMParser(USlippyTile t) { tile = t; }
 
     /// <bounds minlat = "41.4823600" minlon="2.1307800" maxlat="41.4859300" maxlon="2.1345400"/>
     public double getMinLat() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["minlat"].Value); }
@@ -24,14 +27,14 @@ public class OSMParser
     public double getMaxLon() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlon"].Value); }
 
     // TODO
-    public List<OSMNode> getRoads()
+    private List<OSMNode> getRoads()
     {
         List<OSMNode> l = new List<OSMNode>();
 
         return l;
     }
 
-    public Hashtable getNodes()
+    private Hashtable getNodes()
     {
         /// node structure:
         /// <osm>
@@ -64,7 +67,7 @@ public class OSMParser
         return nodes;
     }
 
-    public Hashtable getWays()
+    private Hashtable getWays()
     {
         /// node structure:
         /// <osm>
@@ -100,5 +103,20 @@ public class OSMParser
             ways.Add(id, way);
         }
         return ways;
+    }
+
+    /// Threaded task. DON'T use the Unity API here!
+    protected override void ThreadFunction()
+    {
+        xmlData = OSMDownloader.getOSMXML(tile);
+        nodes = getNodes();
+        ways = getWays();
+        //roads = getRoads();
+    }
+
+    /// This is executed by the Unity main thread when the job is finished
+    protected override void OnFinished()
+    {
+        Debug.Log("OSMParser " + tile + " done in " + (endTime - startTime).TotalSeconds + " sec.");
     }
 }

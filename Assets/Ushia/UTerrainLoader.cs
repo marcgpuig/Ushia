@@ -1,16 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Net;
 using UnityEngine;
-using System;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.Security;
 
-public class UTerrainLoader : UThreadWrapper {
-
+public class UTerrainLoader : UThreadWrapper
+{
     /// Tile to load
     public USlippyTile tile;
     public byte[] heightData;
+
+    public UTerrainLoader(USlippyTile t) { tile = t; }
 
     /// <summary>
     /// Returns an array with a heightmap on it
@@ -19,6 +16,7 @@ public class UTerrainLoader : UThreadWrapper {
     /// <returns></returns>
     public static byte[] getByteHeight(USlippyTile tile)
     {
+        // ERROR HERE
         byte[] pngData;
         using (WebClient client = new WebClient())
         {
@@ -38,6 +36,6 @@ public class UTerrainLoader : UThreadWrapper {
     /// This is executed by the Unity main thread when the job is finished
     protected override void OnFinished()
     {
-
+        Debug.Log("Terrain Loader " + tile + " done in " + (endTime - startTime).TotalSeconds + " sec.");
     }
 }

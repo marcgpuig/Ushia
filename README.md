@@ -11,7 +11,7 @@ This project uses [OpenStreetMap][OpenStreetMap] ([OSM XML][OSMXML]) and [Mapzen
 	git clone https://github.com/marcgpuig/Ushia.git
 
 ## Unity version
-Currently using [Unity3D][unity] 5.5.1.
+Currently using [Unity3D][unity] 5.6.
 
 ## Tests cases
 [Here][test] can be found some good OSM test files.

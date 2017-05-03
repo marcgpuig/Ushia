@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -137,9 +138,11 @@ public class UPlayer : MonoBehaviour
     {
         GameObject t = new GameObject(key);
 
+        /// Crete the TerrainData
         TerrainData tData = new TerrainData();
         tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8); // don't know why 8, but terrain its 8 times bigger than this numbers
-
+        
+        /// Add the terrain Collider and the Terrain based in the TerrainData
         TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
         Terrain tComp = t.AddComponent<Terrain>();
         tColliderComp.terrainData = tData;
@@ -147,8 +150,13 @@ public class UPlayer : MonoBehaviour
 
         tComp.materialType = Terrain.MaterialType.BuiltInLegacySpecular;
 
+        /// Create and init the UTerrain that will load the height data
         t.AddComponent<UTerrain>();
         t.GetComponent<UTerrain>().init(tile, this);
+
+        /// Create and init the UTerrain that will load the height data
+        //t.AddComponent<OSMChunk>();
+        //t.GetComponent<OSMChunk>().init(tile, this);
 
         return t;
     }

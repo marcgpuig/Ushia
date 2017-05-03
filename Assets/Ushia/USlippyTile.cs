@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 /// <summary>
 /// Tiles are 256 × 256 pixel PNG files
@@ -53,6 +54,43 @@ public class USlippyTile
         x = a.x;
         y = a.y;
         zoom = _zoom;
+    }
+
+    public double getTileSize()
+    {
+        return zoomSize(Slippy2GCS(this).lat, zoom);
+    }
+
+    /// <summary>
+    /// Ground resolution per zoom in meters at a given latitude.
+    /// From: https://mapzen.com/documentation/terrain-tiles/data-sources/
+    /// </summary>
+    /// <param name="lat">latitude</param>
+    /// <param name="zoom">zoom level</param>
+    /// <returns></returns>
+    public static double zoomSize(double lat, int zoom)
+    {
+        double r = Math.PI / 180;
+        double t = lat * r;
+        double a = Math.Cos(t) * 2 * Math.PI * 6378137;
+        double b = 256 * Math.Pow(2, zoom);
+        return a / b;
+    }
+
+    public static GCS Slippy2GCS(USlippyTile tile)
+    {
+        GCS p = new GCS();
+        double n = Math.PI - ((2.0 * Math.PI * tile.y) / Math.Pow(2.0, tile.zoom));
+
+        p.lon = (float)((tile.x / Math.Pow(2.0, tile.zoom) * 360.0) - 180.0);
+        p.lat = (float)(180.0 / Math.PI * Math.Atan(Math.Sinh(n)));
+
+        return p;
+    }
+
+    public GCS getGCS()
+    {
+        return Slippy2GCS(this);
     }
 
     public static USlippyTile GCS2Slippy(GCS p, int _zoom)

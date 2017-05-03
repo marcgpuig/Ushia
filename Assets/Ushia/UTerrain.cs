@@ -11,8 +11,7 @@ public class UTerrain : MonoBehaviour {
 
     public bool generated = false;
 
-    private Terrain terrain;
-    private UTerrainLoader loader = null;
+    private UTerrainLoader loader;
     public USlippyTile tile;
     private UPlayer player;
 
@@ -23,15 +22,10 @@ public class UTerrain : MonoBehaviour {
 
     private Terrain[] neighbors; /// left, top, right, bottom
 
-    public void init(USlippyTile _tile, UPlayer pl)
+    public void init(USlippyTile t, UPlayer p)
     {
-        terrain = GetComponent<Terrain>();
-        loader = new UTerrainLoader();
-        neighbors = new Terrain[4];
-        tile = _tile;
-        loader.tile = _tile;
-        loader.Start();
-        player = pl;
+        tile = t;
+        player = p;
     }
 
     /// <summary>
@@ -149,6 +143,53 @@ public class UTerrain : MonoBehaviour {
         GetComponent<Terrain>().ApplyDelayedHeightmapModification();
     }
 
+    private void genHeight()
+    {
+        Terrain terrain = GetComponent<Terrain>();
+
+        Texture2D data = new Texture2D(256, 256);
+
+        byte[] rawData = new byte[256 * 256];
+        rawData = loader.heightData;
+        data.LoadImage(rawData);
+        data.Apply();
+        GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, terrainDepth, GetComponent<Transform>().position.z);
+        TerrainData td = terrain.terrainData;
+        td.alphamapResolution = 257;
+        td.heightmapResolution = 257;
+
+        td.size = new Vector3(td.size.x, terrainHeight, td.size.z);
+
+        float[,] heights = new float[td.alphamapWidth, td.alphamapWidth];
+
+        for (int i = 0; i < td.alphamapWidth; i++)
+        {
+            for (int j = 0; j < td.alphamapWidth; j++)
+            {
+                Color c = data.GetPixel(i, j);
+                float r = c.r;
+                float g = c.g;
+                float b = c.b;
+                heights[j, i] = (r * 256 + g + b / 256) / 256;
+
+                /// This will merge with the border of another terrain
+                if (i == td.alphamapWidth - 1) heights[j, i] = heights[j, td.alphamapWidth - 2];
+            }
+            /// This will merge with the border of another terrain
+            heights[td.alphamapWidth - 1, i] = heights[td.alphamapWidth - 2, i];
+        }
+
+        td.SetHeights(0, 0, heights);
+        terrain.ApplyDelayedHeightmapModification();
+    }
+
+    private void Start()
+    {
+        neighbors = new Terrain[4];
+        loader = new UTerrainLoader(tile);
+        loader.Start();
+    }
+
     private void Update()
     {
         /// Deletes the terrain if the reference to player or tile desapears
@@ -231,45 +272,5 @@ public class UTerrain : MonoBehaviour {
                 // TODO: throw a thread and save the height in disk.
             }
         }
-    }
-
-    private void genHeight()
-    {
-        terrain = GetComponent<Terrain>();
-
-        Texture2D data = new Texture2D(256, 256);
-
-        byte[] rawData = new byte[256 * 256];
-        rawData = loader.heightData;
-        data.LoadImage(rawData);
-        data.Apply();
-        GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, terrainDepth, GetComponent<Transform>().position.z);
-        TerrainData td = terrain.terrainData;
-        td.alphamapResolution = 257;
-        td.heightmapResolution = 257;
-
-        td.size = new Vector3(td.size.x, terrainHeight, td.size.z);
-
-        float[,] heights = new float[td.alphamapWidth, td.alphamapWidth];
-
-        for (int i = 0; i < td.alphamapWidth; i++)
-        {
-            for (int j = 0; j < td.alphamapWidth; j++)
-            {
-                Color c = data.GetPixel(i, j);
-                float r = c.r;
-                float g = c.g;
-                float b = c.b;
-                heights[j, i] = (r * 256 + g + b / 256) / 256;
-
-                /// This will merge with the border of another terrain
-                if (i == td.alphamapWidth-1) heights[j, i] = heights[j, td.alphamapWidth-2];
-            }
-            /// This will merge with the border of another terrain
-            heights[td.alphamapWidth-1, i] = heights[td.alphamapWidth-2, i];
-        }
-
-        td.SetHeights(0, 0, heights);
-        terrain.ApplyDelayedHeightmapModification();
     }
 }
