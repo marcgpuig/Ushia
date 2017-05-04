@@ -10,6 +10,10 @@ public class OSMChunk : MonoBehaviour
     public USlippyTile tile  = null;
     private UPlayer player;
 
+    private bool loaded = false;
+
+    public bool isLoaded { get { return loaded; } }
+
     /// bounds
     private double minLat = 0;
     private double minLon = 0;
@@ -129,6 +133,7 @@ public class OSMChunk : MonoBehaviour
 
                 /// set the parser to null to ignore it one time has finished
                 parser = null;
+                loaded = true;
             }
         }
 

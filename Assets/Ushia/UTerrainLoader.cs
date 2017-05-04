@@ -36,6 +36,6 @@ public class UTerrainLoader : UThreadWrapper
     /// This is executed by the Unity main thread when the job is finished
     protected override void OnFinished()
     {
-        Debug.Log("Terrain Loader " + tile + " done in " + (endTime - startTime).TotalSeconds + " sec.");
+        Debug.Log("Terrain Loader " + tile + " done in " + (endTime - startTime).TotalSeconds + " sec.\nURL: " + tile.getMapzenURLTerranium(UVariables.mapzenAPIKey));
     }
 }

@@ -1,6 +1,10 @@
 ﻿using System.Collections;
 using System;
 
+/// <summary>
+/// Helper class to make threading easier.
+/// From: http://answers.unity3d.com/questions/357033/unity3d-and-c-coroutines-vs-threading.html
+/// </summary>
 public class UThreadWrapper
 {
     private bool m_IsDone = false;

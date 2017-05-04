@@ -21,7 +21,7 @@ public class UPlayer : MonoBehaviour
     [Header("Clear:")]
     public bool _clearHashMap = false;
 
-    /// Debug Gizmos
+    /// debug Gizmos
     [Header("Debug:")]
     public bool debugChunks = true;
     public bool debugDistances = true;
@@ -106,7 +106,7 @@ public class UPlayer : MonoBehaviour
             Int3 chunk = Int3.findChunk(t.transform.position + new Vector3(chunkSize*0.5f, chunkSize * 0.5f, chunkSize * 0.5f), chunkSize);
             Int3 player = Int3.findChunk(transform.position, chunkSize);
 
-            /// Distancia de Chebyshov
+            /// distancia de Chebyshov
             /// https://es.wikipedia.org/wiki/Distancia_de_Chebyshov
             Int3 dist = chunk - player;
             dist = dist.abs();
@@ -138,25 +138,30 @@ public class UPlayer : MonoBehaviour
     {
         GameObject t = new GameObject(key);
 
-        /// Crete the TerrainData
+        /// crete the TerrainData
         TerrainData tData = new TerrainData();
         tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8); // don't know why 8, but terrain its 8 times bigger than this numbers
         
-        /// Add the terrain Collider and the Terrain based in the TerrainData
+        /// add the terrain Collider and the Terrain based in the TerrainData
         TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
         Terrain tComp = t.AddComponent<Terrain>();
         tColliderComp.terrainData = tData;
         tComp.terrainData = tData;
 
+        /// change the terrain material
         tComp.materialType = Terrain.MaterialType.BuiltInLegacySpecular;
 
-        /// Create and init the UTerrain that will load the height data
-        t.AddComponent<UTerrain>();
-        t.GetComponent<UTerrain>().init(tile, this);
+        /// create and init the UTerrain that will load the height data
+        UTerrain uTerrain = t.AddComponent<UTerrain>();
+        uTerrain.init(tile, this);
 
-        /// Create and init the UTerrain that will load the height data
-        //t.AddComponent<OSMChunk>();
-        //t.GetComponent<OSMChunk>().init(tile, this);
+        /// create and init the UTerrain that will load the height data
+        OSMChunk osmChunk = t.AddComponent<OSMChunk>();
+        osmChunk.init(tile, this);
+
+        /// only for debug visualization
+        OSMDebug visualization = t.AddComponent<OSMDebug>();
+        //visualization.chunk = osmChunk;
 
         return t;
     }
@@ -171,19 +176,19 @@ public class UPlayer : MonoBehaviour
 
         if(playerIsInNewChunk())
         {
-            /// Chunk Position
+            /// chunk Position
             int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
             int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
 
-            /// Chunk number in the world starting from world position 0,0
+            /// chunk number in the world starting from world position 0,0
             int xNum = (int)(x / chunkSize);
             int yNum = (int)(y / chunkSize);
 
-            /// Starting tile
+            /// starting tile
             // Only for debug
             startTile = new USlippyTile(startLon, startLat, zoom);
 
-            /// Sapwn all the new needed chunks
+            /// sapwn all the new needed chunks
             for (int i = -chunkAdjacentLayers; i <= chunkAdjacentLayers; i++)
             {
                 for (int j = -chunkAdjacentLayers; j <= chunkAdjacentLayers; j++)
@@ -206,7 +211,7 @@ public class UPlayer : MonoBehaviour
                     }
                 }
             }
-            /// After spawning the new chunks, remove the olders that we dont need
+            /// after spawning the new chunks, remove the olders that we dont need
             removeResidualChunks();
         }
     }

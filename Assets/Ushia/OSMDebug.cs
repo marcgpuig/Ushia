@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
+[RequireComponent(typeof(OSMChunk))]
 public class OSMDebug : MonoBehaviour
 {
-    public string filePath;
     public OSMChunk chunk;
     public bool reload = false;
 
@@ -14,33 +14,26 @@ public class OSMDebug : MonoBehaviour
     private Vector3 sNodes;
     public Color cNodes = new Color(1,0,1,0.3f);
 
-    void Start ()
+    void Start()
     {
-        if (chunk != null)
-        {
-            init(chunk);
-        }
-        else
-        {
-            init(new OSMChunk());
-        }
-    }
-
-    void init(OSMChunk _chunk)
-    {
-        chunk = _chunk;
-        /*chunk.loadOSM(filePath);
-        chunk.loadNodes();
-        chunk.loadWays();*/
-
         sNodes = new Vector3(nodeSize, nodeSize, nodeSize);
+        chunk = GetComponent<OSMChunk>();
     }
 
     private void Update()
     {
-        if(reload)
+        if (reload)
         {
-            init(new OSMChunk());
+            if (chunk != null && chunk.isLoaded && chunk.nodes != null)
+            {
+                /// drawing all nodes
+                foreach (DictionaryEntry e in chunk.nodes)
+                {
+                    OSMNode n = (OSMNode)e.Value;
+                    Debug.Log(n.pos);
+                }
+
+            }
             reload = false;
         }
     }
@@ -62,17 +55,16 @@ public class OSMDebug : MonoBehaviour
     {
         sNodes.Set(nodeSize, nodeSize, nodeSize);
         Gizmos.color = cNodes;
-        //Gizmos.DrawCube(new Vector3(0, 0, 0), sNodes);
-
-        if (chunk != null && chunk.nodes != null)
+        //Gizmos.DrawCube(new Vector3(0, 0, 0), sNodes
+        if (chunk != null && chunk.isLoaded && chunk.nodes != null)
         {
             /// drawing all nodes
-            /*foreach (DictionaryEntry e in chunk.nodes)
+            foreach (DictionaryEntry e in chunk.nodes)
             {
                 OSMNode n = (OSMNode)e.Value;
                 Gizmos.DrawCube(n.pos, sNodes);
-            }*/
-
+            }
+            /*
             /// drawing all ways
             OSMNode current;
             OSMNode next;
@@ -133,16 +125,17 @@ public class OSMDebug : MonoBehaviour
                 for (int i = 0; i < w.nodesIds.Count - 1; i++)
                 {
                     current = (OSMNode)chunk.nodes[w.nodesIds[i]];
-                    next    = (OSMNode)chunk.nodes[w.nodesIds[i+1]];
+                    next = (OSMNode)chunk.nodes[w.nodesIds[i + 1]];
                     Gizmos.DrawLine(current.pos, next.pos);
                 }
-
+            
                 Gizmos.color = old;
             }
+            */
         }
         else if (chunk == null)
         {
             Debug.Log("Debug chunk is null");
         }
-    }
+    }   
 }
