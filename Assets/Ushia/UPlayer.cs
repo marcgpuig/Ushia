@@ -34,6 +34,7 @@ public class UPlayer : MonoBehaviour
     void Start ()
     {
         init();
+        ServicePointManager.ServerCertificateValidationCallback = UUtils.MyRemoteCertificateValidationCallback;
     }
 
     public void init()

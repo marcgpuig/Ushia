@@ -16,7 +16,6 @@ public static class OSMDownloader
         using (WebClient client = new WebClient())
         {
             GCS gcs = USlippyTile.Slippy2GCS(tile);
-            ServicePointManager.ServerCertificateValidationCallback = UUtils.MyRemoteCertificateValidationCallback;
             //               # RightLon  #LowLat   #LeftLon  #HiLat
             //chunkLimits = [2.13078,    41.48236, 2.13454,  41.48593]
             string url = OSMApiCall + gcs.lon + "," + gcs.lat + "," + (gcs.lon + 0.005) + "," + (gcs.lat + 0.005);

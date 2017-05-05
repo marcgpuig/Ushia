@@ -120,16 +120,16 @@ public class USlippyTile
 
     public string getMapzenURLTerranium(string apiKey)
     {
-        return "https://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
+        return "http://tile.mapzen.com/mapzen/terrain/v1/terrarium/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
     }
 
     public string getMapzenURLNormal(string apiKey)
     {
-        return "https://tile.mapzen.com/mapzen/terrain/v1/normal/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
+        return "http://tile.mapzen.com/mapzen/terrain/v1/normal/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
     }
 
     public string getMapzenURLGeotiff(string apiKey)
     {
-        return "https://tile.mapzen.com/mapzen/terrain/v1/geotiff/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
+        return "http://tile.mapzen.com/mapzen/terrain/v1/geotiff/" + zoom.ToString() + "/" + x.ToString() + "/" + y.ToString() + ".png?api_key=" + apiKey;
     }
 }

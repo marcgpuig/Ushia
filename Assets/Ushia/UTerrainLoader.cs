@@ -21,7 +21,6 @@ public class UTerrainLoader : UThreadWrapper
         using (WebClient client = new WebClient())
         {
             string url = tile.getMapzenURLTerranium(UVariables.mapzenAPIKey);
-            ServicePointManager.ServerCertificateValidationCallback = UUtils.MyRemoteCertificateValidationCallback;
             pngData = client.DownloadData(url);
         }
         return pngData;
