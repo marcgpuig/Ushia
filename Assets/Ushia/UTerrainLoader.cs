@@ -16,7 +16,6 @@ public class UTerrainLoader : UThreadWrapper
     /// <returns></returns>
     public static byte[] getByteHeight(USlippyTile tile)
     {
-        // ERROR HERE
         byte[] pngData;
         using (WebClient client = new WebClient())
         {

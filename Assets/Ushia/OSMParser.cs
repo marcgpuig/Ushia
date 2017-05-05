@@ -27,14 +27,14 @@ public class OSMParser : UThreadWrapper
     public double getMaxLon() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlon"].Value); }
 
     // TODO
-    private List<OSMNode> getRoads()
+    private List<OSMNode> getRoads(XmlDocument xmlData)
     {
         List<OSMNode> l = new List<OSMNode>();
 
         return l;
     }
 
-    private Hashtable getNodes()
+    private Hashtable getNodes(XmlDocument xmlData)
     {
         /// node structure:
         /// <osm>
@@ -67,7 +67,7 @@ public class OSMParser : UThreadWrapper
         return nodes;
     }
 
-    private Hashtable getWays()
+    private static Hashtable getWays(XmlDocument xmlData)
     {
         /// node structure:
         /// <osm>
@@ -109,9 +109,9 @@ public class OSMParser : UThreadWrapper
     protected override void ThreadFunction()
     {
         xmlData = OSMDownloader.getOSMXML(tile);
-        nodes = getNodes();
-        ways = getWays();
-        //roads = getRoads();
+        nodes = getNodes(xmlData);
+        ways = getWays(xmlData);
+        //roads = getRoads(xmlData);
     }
 
     /// This is executed by the Unity main thread when the job is finished

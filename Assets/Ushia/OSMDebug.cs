@@ -7,12 +7,14 @@ using UnityEngine;
 public class OSMDebug : MonoBehaviour
 {
     public OSMChunk chunk;
-    public bool reload = false;
 
     [Range(0.0f, 10.5f)]
     public float nodeSize = 0.1f;
     private Vector3 sNodes;
     public Color cNodes = new Color(1,0,1,0.3f);
+
+    public bool debugNodes = false;
+    public bool debugWays = true;
 
     void Start()
     {
@@ -22,20 +24,7 @@ public class OSMDebug : MonoBehaviour
 
     private void Update()
     {
-        if (reload)
-        {
-            if (chunk != null && chunk.isLoaded && chunk.nodes != null)
-            {
-                /// drawing all nodes
-                foreach (DictionaryEntry e in chunk.nodes)
-                {
-                    OSMNode n = (OSMNode)e.Value;
-                    Debug.Log(n.pos);
-                }
 
-            }
-            reload = false;
-        }
     }
 
     private void OnDrawGizmosSelected()
@@ -58,80 +47,85 @@ public class OSMDebug : MonoBehaviour
         //Gizmos.DrawCube(new Vector3(0, 0, 0), sNodes
         if (chunk != null && chunk.isLoaded && chunk.nodes != null)
         {
-            /// drawing all nodes
-            foreach (DictionaryEntry e in chunk.nodes)
+            if (debugNodes)
             {
-                OSMNode n = (OSMNode)e.Value;
-                Gizmos.DrawCube(n.pos, sNodes);
+                /// drawing all nodes
+                foreach (DictionaryEntry e in chunk.nodes)
+                {
+                    OSMNode n = (OSMNode)e.Value;
+                    Gizmos.DrawCube(n.pos, sNodes);
+                }
             }
-            /*
-            /// drawing all ways
-            OSMNode current;
-            OSMNode next;
-            foreach (DictionaryEntry e in chunk.ways)
+
+            if (debugWays)
             {
-                OSMWay w = (OSMWay)e.Value;
-
-                Color old = Gizmos.color;
-
-                if (w.tags.ContainsKey("highway"))
+                /// drawing all ways
+                OSMNode current;
+                OSMNode next;
+                foreach (DictionaryEntry e in chunk.ways)
                 {
-                    if (w.tags.ContainsValue("motorway") || w.tags.ContainsValue("motorway_link"))
-                        Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
-                    if (w.tags.ContainsValue("trunk") || w.tags.ContainsValue("trunk_link"))
-                        Gizmos.color = new Color(0.98f, 0.69f, 0.60f);
-                    if (w.tags.ContainsValue("primary") || w.tags.ContainsValue("primary_link"))
-                        Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
-                    if (w.tags.ContainsValue("secondary") || w.tags.ContainsValue("secondary_link"))
-                        Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
-                    if (w.tags.ContainsValue("tertiary") || w.tags.ContainsValue("tertiary_link"))
-                        Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
-                    if (w.tags.ContainsValue("unclassified"))
-                        Gizmos.color = new Color(0.60f, 0.75f, 0.75f);
-                    if (w.tags.ContainsValue("residential"))
-                        Gizmos.color = new Color(0.52f, 0.52f, 0.52f);
-                    if (w.tags.ContainsValue("service"))
-                        Gizmos.color = new Color(0.75f, 0.75f, 0.6f);
+                    OSMWay w = (OSMWay)e.Value;
 
-                    /// mainly/exclusively for pedestrians
-                    if (w.tags.ContainsValue("footway") || w.tags.ContainsValue("bridleway") || w.tags.ContainsValue("steps") || w.tags.ContainsValue("path") || w.tags.ContainsValue("pedestrian"))
-                        Gizmos.color = new Color(0.827f, 0.615f, 0.070f, 0.5f);
-                }
+                    Color old = Gizmos.color;
 
-                if (w.tags.ContainsKey("waterway"))
-                {
-                    if (w.tags.ContainsValue("river"))
-                        Gizmos.color = new Color(0.1f, 0.2f, 0.9f);
-                    if (w.tags.ContainsValue("stream"))
-                        Gizmos.color = new Color(0.1f, 0.3f, 0.9f);
-                }
+                    if (w.tags.ContainsKey("highway"))
+                    {
+                        if (w.tags.ContainsValue("motorway") || w.tags.ContainsValue("motorway_link"))
+                            Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
+                        if (w.tags.ContainsValue("trunk") || w.tags.ContainsValue("trunk_link"))
+                            Gizmos.color = new Color(0.98f, 0.69f, 0.60f);
+                        if (w.tags.ContainsValue("primary") || w.tags.ContainsValue("primary_link"))
+                            Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
+                        if (w.tags.ContainsValue("secondary") || w.tags.ContainsValue("secondary_link"))
+                            Gizmos.color = new Color(0.95f, 0.93f, 0.91f);
+                        if (w.tags.ContainsValue("tertiary") || w.tags.ContainsValue("tertiary_link"))
+                            Gizmos.color = new Color(0.75f, 0.75f, 0.75f);
+                        if (w.tags.ContainsValue("unclassified"))
+                            Gizmos.color = new Color(0.60f, 0.75f, 0.75f);
+                        if (w.tags.ContainsValue("residential"))
+                            Gizmos.color = new Color(0.52f, 0.52f, 0.52f);
+                        if (w.tags.ContainsValue("service"))
+                            Gizmos.color = new Color(0.75f, 0.75f, 0.6f);
 
-                if (w.tags.ContainsKey("craft") || w.tags.ContainsKey("building"))
-                {
-                    Gizmos.color = new Color(0.8f, 0.4f, 0.1f, 0.8f);
-                }
+                        /// mainly/exclusively for pedestrians
+                        if (w.tags.ContainsValue("footway") || w.tags.ContainsValue("bridleway") || w.tags.ContainsValue("steps") || w.tags.ContainsValue("path") || w.tags.ContainsValue("pedestrian"))
+                            Gizmos.color = new Color(0.827f, 0.615f, 0.070f, 0.5f);
+                    }
 
-                if (w.tags.ContainsKey("railway"))
-                {
-                    Gizmos.color = new Color(0.713f, 0.827f, 0.070f, 0.6f);
-                }
+                    if (w.tags.ContainsKey("waterway"))
+                    {
+                        if (w.tags.ContainsValue("river"))
+                            Gizmos.color = new Color(0.1f, 0.2f, 0.9f);
+                        if (w.tags.ContainsValue("stream"))
+                            Gizmos.color = new Color(0.1f, 0.3f, 0.9f);
+                    }
 
-                if (w.tags.ContainsKey("power"))
-                {
-                    if (w.tags.ContainsValue("line"))
-                        Gizmos.color = new Color(0.95f, 0.85f, 0.2f);
-                }
+                    if (w.tags.ContainsKey("craft") || w.tags.ContainsKey("building"))
+                    {
+                        Gizmos.color = new Color(0.8f, 0.4f, 0.1f, 0.8f);
+                    }
 
-                for (int i = 0; i < w.nodesIds.Count - 1; i++)
-                {
-                    current = (OSMNode)chunk.nodes[w.nodesIds[i]];
-                    next = (OSMNode)chunk.nodes[w.nodesIds[i + 1]];
-                    Gizmos.DrawLine(current.pos, next.pos);
+                    if (w.tags.ContainsKey("railway"))
+                    {
+                        Gizmos.color = new Color(0.713f, 0.827f, 0.070f, 0.6f);
+                    }
+
+                    if (w.tags.ContainsKey("power"))
+                    {
+                        if (w.tags.ContainsValue("line"))
+                            Gizmos.color = new Color(0.95f, 0.85f, 0.2f);
+                    }
+
+                    for (int i = 0; i < w.nodesIds.Count - 1; i++)
+                    {
+                        current = (OSMNode)chunk.nodes[w.nodesIds[i]];
+                        next = (OSMNode)chunk.nodes[w.nodesIds[i + 1]];
+                        Gizmos.DrawLine(current.pos, next.pos);
+                    }
+
+                    Gizmos.color = old;
                 }
-            
-                Gizmos.color = old;
             }
-            */
         }
         else if (chunk == null)
         {

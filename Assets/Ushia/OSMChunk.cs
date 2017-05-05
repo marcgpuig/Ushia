@@ -128,8 +128,9 @@ public class OSMChunk : MonoBehaviour
             {
                 /// here the thread have finished
                 /// lets get the data from the parser
-                nodes = parser.nodes;
-                ways = parser.ways;
+                loadBounds();
+                loadNodes();
+                loadWays();
 
                 /// set the parser to null to ignore it one time has finished
                 parser = null;
