@@ -6,25 +6,36 @@ using UnityEngine;
 [RequireComponent(typeof(OSMChunk))]
 public class OSMDebug : MonoBehaviour
 {
-    public OSMChunk chunk;
+    private OSMChunk chunk;
 
-    [Range(0.0f, 10.5f)]
+    //[Range(0.0f, 10.5f)]
     public float nodeSize = 0.1f;
     private Vector3 sNodes;
     public Color cNodes = new Color(1,0,1,0.3f);
 
-    public bool debugNodes = false;
+    public Vector3 offset;
+
+    public bool debugNodes = true;
     public bool debugWays = true;
 
     void Start()
     {
         sNodes = new Vector3(nodeSize, nodeSize, nodeSize);
         chunk = GetComponent<OSMChunk>();
+        offset = new Vector3(0, 44000, 0);
     }
 
     private void Update()
     {
 
+    }
+
+    private void drawChunkBounds()
+    {
+        Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3((float)chunk.width, 0, 0));
+        Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3(0, 0, (float)chunk.height));
+        Gizmos.DrawLine(chunk.transform.position + new Vector3((float)chunk.width, 0, 0), chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
+        Gizmos.DrawLine(chunk.transform.position + new Vector3(0, 0, (float)chunk.height), chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
     }
 
     private void OnDrawGizmosSelected()
@@ -33,10 +44,7 @@ public class OSMDebug : MonoBehaviour
         if (chunk != null)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3((float)chunk.width, 0, 0));
-            Gizmos.DrawLine(chunk.transform.position, chunk.transform.position + new Vector3(0, 0, (float)chunk.height));
-            Gizmos.DrawLine(chunk.transform.position + new Vector3((float)chunk.width, 0, 0) , chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
-            Gizmos.DrawLine(chunk.transform.position + new Vector3(0, 0, (float)chunk.height), chunk.transform.position + new Vector3((float)chunk.width, 0, (float)chunk.height));
+            drawChunkBounds();
         }
     }
 
@@ -44,6 +52,16 @@ public class OSMDebug : MonoBehaviour
     {
         sNodes.Set(nodeSize, nodeSize, nodeSize);
         Gizmos.color = cNodes;
+
+        Vector3 pos = transform.position + offset;
+
+        if (chunk.haveParser)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, transform.position + new Vector3(250, 0, 250));
+            //drawChunkBounds();
+        }
+
         //Gizmos.DrawCube(new Vector3(0, 0, 0), sNodes
         if (chunk != null && chunk.isLoaded && chunk.nodes != null)
         {
@@ -53,7 +71,7 @@ public class OSMDebug : MonoBehaviour
                 foreach (DictionaryEntry e in chunk.nodes)
                 {
                     OSMNode n = (OSMNode)e.Value;
-                    Gizmos.DrawCube(n.pos, sNodes);
+                    Gizmos.DrawCube(n.pos + pos, sNodes);
                 }
             }
 
@@ -120,7 +138,7 @@ public class OSMDebug : MonoBehaviour
                     {
                         current = (OSMNode)chunk.nodes[w.nodesIds[i]];
                         next = (OSMNode)chunk.nodes[w.nodesIds[i + 1]];
-                        Gizmos.DrawLine(current.pos, next.pos);
+                        Gizmos.DrawLine(current.pos + pos, next.pos + pos);
                     }
 
                     Gizmos.color = old;

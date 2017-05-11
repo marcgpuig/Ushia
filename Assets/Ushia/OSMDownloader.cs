@@ -15,10 +15,15 @@ public static class OSMDownloader
         XmlDocument xml = new XmlDocument();
         using (WebClient client = new WebClient())
         {
-            GCS gcs = USlippyTile.Slippy2GCS(tile);
-            //               # RightLon  #LowLat   #LeftLon  #HiLat
-            //chunkLimits = [2.13078,    41.48236, 2.13454,  41.48593]
-            string url = OSMApiCall + gcs.lon + "," + gcs.lat + "," + (gcs.lon + 0.005) + "," + (gcs.lat + 0.005);
+            //tile.y
+            USlippyTile copy = new USlippyTile(tile.x, tile.y, tile.zoom);
+            copy.y += 1;
+            GCS gcs = copy.getGCS();
+            /// North-East USlippyTile's GCS
+            GCS gcsNE = copy.getNorthEastGCS();
+            //              # LefttLon #LowLat   #RightLon #HiLat
+            //chunkLimits = [2.13078,  41.48236, 2.13454,  41.48593]
+            string url = OSMApiCall + gcs.lon + "," + gcs.lat + "," + gcsNE.lon + "," + gcsNE.lat;
             xml.LoadXml(client.DownloadString(url));
         }
         return xml;

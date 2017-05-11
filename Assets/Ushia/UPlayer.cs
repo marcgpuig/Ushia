@@ -7,15 +7,19 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class UPlayer : MonoBehaviour
 {
+    [Header("Generation:")]
+    public bool genTerrain = true;
+    public bool genOSM     = false;
+
     [Header("Chunk parameters:")]
-    public float chunkSize = 1;
+    public float chunkSize         = 1;
     public int chunkAdjacentLayers = 1;
-    public int maxResidualChunks = 2;
+    public int maxResidualChunks   = 2;
 
     [Header("World Location:")]
-    public double startLon = 0;
     public double startLat = 0;
-    public int zoom = 14;
+    public double startLon = 0;
+    public int zoom        = 14;
     private USlippyTile startTile;
 
     [Header("Clear:")]
@@ -23,9 +27,10 @@ public class UPlayer : MonoBehaviour
 
     /// debug Gizmos
     [Header("Debug:")]
-    public bool debugChunks = true;
-    public bool debugDistances = true;
-    public bool debugPositions = true;
+    public bool debugChunks    = true;
+    public bool debugDistances = false;
+    public bool debugPositions = false;
+    public bool debugOSM       = true;
 
     private Hashtable map = new Hashtable();
     private int lastChunkX = 0;
@@ -59,8 +64,8 @@ public class UPlayer : MonoBehaviour
 
     public bool playerIsInNewChunk()
     {
-        int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-        int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+        int x = UMaths.scaledFloor(chunkSize, transform.position.x);
+        int y = UMaths.scaledFloor(chunkSize, transform.position.z);
         if (lastChunkX != x || lastChunkY != y)
         {
             lastChunkX = x;
@@ -139,30 +144,38 @@ public class UPlayer : MonoBehaviour
     {
         GameObject t = new GameObject(key);
 
-        /// crete the TerrainData
-        TerrainData tData = new TerrainData();
-        tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8); // don't know why 8, but terrain its 8 times bigger than this numbers
-        
-        /// add the terrain Collider and the Terrain based in the TerrainData
-        TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
-        Terrain tComp = t.AddComponent<Terrain>();
-        tColliderComp.terrainData = tData;
-        tComp.terrainData = tData;
+        if (genTerrain)
+        {
+            /// crete the TerrainData
+            TerrainData tData = new TerrainData();
+            tData.size = new Vector3(chunkSize / 8, 0, chunkSize / 8); // don't know why 8, but terrain its 8 times bigger than this numbers
 
-        /// change the terrain material
-        tComp.materialType = Terrain.MaterialType.BuiltInLegacySpecular;
+            /// add the terrain Collider and the Terrain based in the TerrainData
+            TerrainCollider tColliderComp = t.AddComponent<TerrainCollider>();
+            Terrain tComp = t.AddComponent<Terrain>();
+            tColliderComp.terrainData = tData;
+            tComp.terrainData = tData;
 
-        /// create and init the UTerrain that will load the height data
-        UTerrain uTerrain = t.AddComponent<UTerrain>();
-        uTerrain.init(tile, this);
+            /// change the terrain material
+            tComp.materialType = Terrain.MaterialType.BuiltInLegacySpecular;
 
-        /// create and init the UTerrain that will load the height data
-        OSMChunk osmChunk = t.AddComponent<OSMChunk>();
-        osmChunk.init(tile, this);
+            /// create and init the UTerrain that will load the height data
+            UTerrain uTerrain = t.AddComponent<UTerrain>();
+            uTerrain.init(tile, this);
+        }
 
-        /// only for debug visualization
-        OSMDebug visualization = t.AddComponent<OSMDebug>();
-        //visualization.chunk = osmChunk;
+        if (genOSM)
+        {
+            /// create and init the UTerrain that will load the height data
+            OSMChunk osmChunk = t.AddComponent<OSMChunk>();
+            osmChunk.init(tile, this);
+        }
+
+        if (genOSM && debugOSM)
+        {
+            /// only for debug visualization
+            OSMDebug visualization = t.AddComponent<OSMDebug>();
+        }
 
         return t;
     }
@@ -178,8 +191,8 @@ public class UPlayer : MonoBehaviour
         if(playerIsInNewChunk())
         {
             /// chunk Position
-            int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-            int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+            int x = UMaths.scaledFloor(chunkSize, transform.position.x);
+            int y = UMaths.scaledFloor(chunkSize, transform.position.z);
 
             /// chunk number in the world starting from world position 0,0
             int xNum = (int)(x / chunkSize);
@@ -206,7 +219,7 @@ public class UPlayer : MonoBehaviour
 
                         Vector3 pos = new Vector3();
                         pos.Set(x + (i * chunkSize), 0, y + (j * chunkSize));
-                        t.GetComponent<Transform>().position = pos;
+                        t.transform.position = pos;
 
                         map.Add(key, t);
                     }
@@ -228,15 +241,15 @@ public class UPlayer : MonoBehaviour
 
     public void renderRects()
     {
-        float xx = GetComponent<Transform>().position.x % chunkSize;
-        float yy = GetComponent<Transform>().position.z % chunkSize;
+        float xx = transform.position.x % chunkSize;
+        float yy = transform.position.z % chunkSize;
 
         for (int i = -chunkAdjacentLayers; i <= chunkAdjacentLayers; i++)
         {
             for (int j = -chunkAdjacentLayers; j <= chunkAdjacentLayers; j++)
             {
-                Vector3 chunkPos = new Vector3(xx + (chunkSize * i) + (GetComponent<Transform>().position.x < 0 ? chunkSize : 0), 0, yy + (chunkSize * j) + (GetComponent<Transform>().position.z < 0 ? chunkSize : 0));
-                chunkPos = GetComponent<Transform>().position - chunkPos;
+                Vector3 chunkPos = new Vector3(xx + (chunkSize * i) + (transform.position.x < 0 ? chunkSize : 0), 0, yy + (chunkSize * j) + (transform.position.z < 0 ? chunkSize : 0));
+                chunkPos = transform.position - chunkPos;
                 drawRect(chunkPos, chunkSize);
             }
         }
@@ -244,8 +257,8 @@ public class UPlayer : MonoBehaviour
 
     public void drawPoints(float size = 1)
     {
-        int x = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.x);
-        int y = UMaths.scaledFloor(chunkSize, GetComponent<Transform>().position.z);
+        int x = UMaths.scaledFloor(chunkSize, transform.position.x);
+        int y = UMaths.scaledFloor(chunkSize, transform.position.z);
 
         for (int i = -chunkAdjacentLayers; i <= chunkAdjacentLayers; i++)
         {
@@ -263,7 +276,7 @@ public class UPlayer : MonoBehaviour
         foreach (DictionaryEntry p in map)
         {
             GameObject gameObj = (GameObject)p.Value;
-            Gizmos.DrawLine(GetComponent<Transform>().position, gameObj.transform.position + new Vector3(halfHypot, 0, halfHypot));
+            Gizmos.DrawLine(transform.position, gameObj.transform.position + new Vector3(halfHypot, 0, halfHypot));
         }
     }
 
@@ -284,6 +297,6 @@ public class UPlayer : MonoBehaviour
             Gizmos.color = Color.blue;
             drawPoints(chunkSize * 0.025f);
         }
-        Gizmos.DrawIcon(GetComponent<Transform>().position, "UshiaLocation.png");
+        Gizmos.DrawIcon(transform.position, "UshiaLocation.png");
     }
 }

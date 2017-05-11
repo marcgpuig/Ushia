@@ -7,11 +7,14 @@ using UnityEngine;
 public class OSMParser : UThreadWrapper
 {
     private XmlDocument xmlData = null;
-    private USlippyTile tile = null;
+    private USlippyTile tile    = null;
+
+    public double[] bounds = new double[4];
+    public double width    = 0;
+    public double height   = 0;
 
     public Hashtable nodes = null;
-    public Hashtable ways = null;
-    public Hashtable roads = null;
+    public Hashtable ways  = null;
 
     /*public void load(string rawData)
     {
@@ -26,15 +29,21 @@ public class OSMParser : UThreadWrapper
     public double getMaxLat() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlat"].Value); }
     public double getMaxLon() { return double.Parse(xmlData.SelectSingleNode("/osm/bounds").Attributes["maxlon"].Value); }
 
-    // TODO
-    private List<OSMNode> getRoads(XmlDocument xmlData)
+    private void getBounds()
     {
-        List<OSMNode> l = new List<OSMNode>();
-
-        return l;
+        bounds[0] = getMinLat();
+        bounds[1] = getMinLon();
+        bounds[2] = getMaxLat();
+        bounds[3] = getMaxLon();
     }
 
-    private Hashtable getNodes(XmlDocument xmlData)
+    private void calculateDimensions()
+    {
+        width = UMaths.lon2x(bounds[3]) - UMaths.lon2x(bounds[1]);
+        height = UMaths.lat2y(bounds[2]) - UMaths.lat2y(bounds[0]);
+    }
+
+    private void getNodes()
     {
         /// node structure:
         /// <osm>
@@ -44,40 +53,49 @@ public class OSMParser : UThreadWrapper
         ///     </node>
         /// </osm> 
 
-        Hashtable nodes = new Hashtable();
+        nodes = new Hashtable();
         XmlNodeList nodeList = xmlData.SelectNodes("/osm/node");
 
         foreach (XmlNode n in nodeList)
         {
-            long   id  =   long.Parse(n.Attributes["id" ].Value);
             double lat = double.Parse(n.Attributes["lat"].Value);
             double lon = double.Parse(n.Attributes["lon"].Value);
-            OSMNode node = new OSMNode(id, lon, lat);
-            
-            /// adding all the node tags
-            foreach (XmlNode tag in n.SelectNodes("tag"))
-            {
-                string k = tag.Attributes["k"].Value;
-                string v = tag.Attributes["v"].Value;
-                node.tags.Add(k, v);
-            }
 
-            nodes.Add(id, node);
+            /// if the node is outside the boundings don't add it
+            if (lat < bounds[2] && lat > bounds[0] && lon < bounds[3] && lon > bounds[1])
+            {
+                long id = long.Parse(n.Attributes["id"].Value);
+
+                OSMNode node = new OSMNode(id, lon, lat);
+
+                /// adding all the node tags
+                foreach (XmlNode tag in n.SelectNodes("tag"))
+                {
+                    string k = tag.Attributes["k"].Value;
+                    string v = tag.Attributes["v"].Value;
+                    node.tags.Add(k, v);
+                }
+                
+                nodes.Add(id, node);
+            }
         }
-        return nodes;
+
+
     }
 
-    private static Hashtable getWays(XmlDocument xmlData)
+    private void getWays()
     {
         /// node structure:
         /// <osm>
         ///     <way id="35418976">
         ///         <nd ref= "1391558216"/>
+        ///         [...]
+        ///         <nd ref= "1391558253"/>
         ///         <tag k="waterway" v="river"/>
         ///     </way>
         /// </osm>
         /// 
-        Hashtable ways = new Hashtable();
+        ways = new Hashtable();
         XmlNodeList wayList = xmlData.SelectNodes("/osm/way");
 
         foreach (XmlNode w in wayList)
@@ -89,7 +107,16 @@ public class OSMParser : UThreadWrapper
             foreach (XmlNode t in w.SelectNodes("nd"))
             {
                 long nodeRef = long.Parse(t.Attributes["ref"].Value);
-                way.nodesIds.Add(nodeRef);
+
+                if (nodes.ContainsKey(nodeRef))
+                {
+                    OSMNode n = (OSMNode)nodes[nodeRef];
+
+                    if (n.lat < bounds[2] && n.lat > bounds[0] && n.lon < bounds[3] && n.lon > bounds[1])
+                    {
+                        way.nodesIds.Add(nodeRef);
+                    }
+                }
             }
 
             /// adding all the way tags
@@ -100,23 +127,33 @@ public class OSMParser : UThreadWrapper
                 way.tags.Add(k, v);
             }
 
-            ways.Add(id, way);
+            if (way.tags.ContainsKey("highway")
+                || way.tags.ContainsKey("waterway")
+                || way.tags.ContainsKey("craft")
+                || way.tags.ContainsKey("railway")
+                || way.tags.ContainsKey("power")
+                )
+            {
+                ways.Add(id, way);
+            }
         }
-        return ways;
+
     }
 
     /// Threaded task. DON'T use the Unity API here!
     protected override void ThreadFunction()
     {
         xmlData = OSMDownloader.getOSMXML(tile);
-        nodes = getNodes(xmlData);
-        ways = getWays(xmlData);
-        //roads = getRoads(xmlData);
+
+        getBounds();
+        calculateDimensions();
+        getNodes();
+        getWays();
     }
 
     /// This is executed by the Unity main thread when the job is finished
     protected override void OnFinished()
     {
-        Debug.Log("OSMParser " + tile + " done in " + (endTime - startTime).TotalSeconds + " sec.");
+        //Debug.Log("OSMParser: " + tile + "have " + nodes.Count + " nodes. Done in " + (endTime - startTime).TotalSeconds + " sec.");
     }
 }

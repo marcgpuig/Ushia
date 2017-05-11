@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(Terrain))]
 public class UTerrain : MonoBehaviour {
 
-    public static float terrainDepth = -4400;
+    public static float terrainDepth = -4400*10;
     public static float terrainHeight = 8848;
 
     public bool generated = false;
@@ -21,6 +21,8 @@ public class UTerrain : MonoBehaviour {
     private bool fullFixed = false;
 
     private Terrain[] neighbors; /// left, top, right, bottom
+    
+    public bool isFullyLoaded { get { return generated && fullFixed; } }
 
     public void init(USlippyTile t, UPlayer p)
     {
@@ -153,12 +155,12 @@ public class UTerrain : MonoBehaviour {
         rawData = loader.heightData;
         data.LoadImage(rawData);
         data.Apply();
-        GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, terrainDepth, GetComponent<Transform>().position.z);
+        GetComponent<Transform>().position = new Vector3(transform.position.x, terrainDepth, transform.position.z);
         TerrainData td = terrain.terrainData;
         td.alphamapResolution = 257;
         td.heightmapResolution = 257;
 
-        td.size = new Vector3(td.size.x, terrainHeight, td.size.z);
+        td.size = new Vector3(td.size.x, terrainHeight*10, td.size.z);
 
         float[,] heights = new float[td.alphamapWidth, td.alphamapWidth];
 
@@ -268,6 +270,7 @@ public class UTerrain : MonoBehaviour {
             
             if(borderXFixed && borderYFixed && edgeFixed)
             {
+                GetComponent<TerrainCollider>().terrainData = GetComponent<Terrain>().terrainData;
                 fullFixed = true;
                 // TODO: throw a thread and save the height in disk.
             }

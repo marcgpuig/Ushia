@@ -93,6 +93,20 @@ public class USlippyTile
         return Slippy2GCS(this);
     }
 
+    /// <summary>
+    /// Calculates the north-east (top-left) GCS minLat and maxLat 
+    /// to get the maxLat and maxLon of the current chunk
+    /// </summary>
+    public GCS getNorthEastGCS()
+    {
+        USlippyTile result = new USlippyTile(x, y, zoom);
+        result.x += 1;
+        result.y -= 1;
+        if (result.x < 0 || result.y < 0)
+            return null;
+        return result.getGCS();
+    }
+
     public static USlippyTile GCS2Slippy(GCS p, int _zoom)
     {
         p = HeightLoader.WorldToTilePos(p.lon, p.lat, _zoom);

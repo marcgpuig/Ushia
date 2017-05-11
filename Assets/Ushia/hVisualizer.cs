@@ -87,7 +87,7 @@ public class hVisualizer : MonoBehaviour
         /// Terrain coordinates in Unity starts in bottom left, BUT!
         /// terrain coordinates in Height map starts in top left
         GCSImagePos.x =       (float)(tile.lon * 256);
-        GCSImagePos.z = 256 - (float)(tile.lat * 256); /// se we need to subtract that
+        GCSImagePos.z = 256 - (float)(tile.lat * 256); /// so we need to subtract that
         
         /// Coordinates in height map
         int xx =       (int)(tile.lon * 256);

@@ -13,7 +13,7 @@ public class OSMChunk : MonoBehaviour
     private bool loaded = false;
 
     public bool isLoaded { get { return loaded; } }
-
+    public bool haveParser { get { return parser != null; } }
     /// bounds
     private double minLat = 0;
     private double minLon = 0;
@@ -26,6 +26,8 @@ public class OSMChunk : MonoBehaviour
     /// http://cc.davelozinski.com/c-sharp/fastest-collection-for-string-lookups
     public Hashtable nodes = null;
     public Hashtable ways  = null;
+
+    private bool nodesSettedInTerrain = false;
 
     /// geters
     public double getMinLat() { return minLat; }
@@ -60,21 +62,14 @@ public class OSMChunk : MonoBehaviour
         setMaxLon(_maxLon);
     }
 
-    public void calculateDimensions()
-    {
-        width = UMaths.lon2x(maxLon) - UMaths.lon2x(minLon);
-        height = UMaths.lat2y(maxLat) - UMaths.lat2y(minLat);
-    }
-
-    private bool isParserInitialized() { return parser != null; }
-
     private void loadBounds()
     {
-        minLat = parser.getMinLat();
-        minLon = parser.getMinLon();
-        maxLat = parser.getMaxLat();
-        maxLon = parser.getMaxLon();
-        calculateDimensions();
+        minLat = parser.bounds[0];
+        minLon = parser.bounds[1];
+        maxLat = parser.bounds[2];
+        maxLon = parser.bounds[3];
+        width = parser.width;
+        height = parser.height;
     }
 
     /*
@@ -95,7 +90,6 @@ public class OSMChunk : MonoBehaviour
 
     private bool loadNodes()
     {
-        if (!isParserInitialized()) return false;
         nodes = parser.nodes;
 
         /// normalize
@@ -114,7 +108,6 @@ public class OSMChunk : MonoBehaviour
 
     private bool loadWays()
     {
-        if (!isParserInitialized()) return false;
         ways = parser.ways;
         return true;
     }
@@ -138,5 +131,15 @@ public class OSMChunk : MonoBehaviour
             }
         }
 
+        if (parser == null && nodes != null && GetComponent<UTerrain>() != null && GetComponent<UTerrain>().isFullyLoaded && !nodesSettedInTerrain)
+        {
+            foreach (DictionaryEntry e in nodes)
+            {
+                OSMNode n = (OSMNode)e.Value;
+                n.pos.y = GetComponent<Terrain>().SampleHeight(n.pos + transform.position) + GetComponent<Terrain>().GetPosition().y;
+            }
+            
+            nodesSettedInTerrain = true;
+        }
     }
 }
