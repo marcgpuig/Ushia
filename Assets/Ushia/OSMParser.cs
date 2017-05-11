@@ -127,15 +127,12 @@ public class OSMParser : UThreadWrapper
                 way.tags.Add(k, v);
             }
 
-            if (way.tags.ContainsKey("highway")
+            /*if ( way.tags.ContainsKey("highway")
                 || way.tags.ContainsKey("waterway")
                 || way.tags.ContainsKey("craft")
                 || way.tags.ContainsKey("railway")
-                || way.tags.ContainsKey("power")
-                )
-            {
-                ways.Add(id, way);
-            }
+                || way.tags.ContainsKey("power") )*/
+            ways.Add(id, way);            
         }
 
     }

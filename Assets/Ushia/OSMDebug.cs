@@ -15,7 +15,7 @@ public class OSMDebug : MonoBehaviour
 
     public Vector3 offset;
 
-    public bool debugNodes = true;
+    public bool debugNodes = false;
     public bool debugWays = true;
 
     void Start()
