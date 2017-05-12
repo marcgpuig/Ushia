@@ -62,7 +62,7 @@ public class OSMParser : UThreadWrapper
             double lon = double.Parse(n.Attributes["lon"].Value);
 
             /// if the node is outside the boundings don't add it
-            if (lat < bounds[2] && lat > bounds[0] && lon < bounds[3] && lon > bounds[1])
+            if (lat <= bounds[2] && lat >= bounds[0] && lon < bounds[3] && lon > bounds[1])
             {
                 long id = long.Parse(n.Attributes["id"].Value);
 
@@ -103,6 +103,9 @@ public class OSMParser : UThreadWrapper
             long id = long.Parse(w.Attributes["id"].Value);
             OSMWay way = new OSMWay();
 
+            OSMNode prev = null;
+            OSMNode next = null;
+
             /// adding all the node references
             foreach (XmlNode t in w.SelectNodes("nd"))
             {
@@ -111,11 +114,8 @@ public class OSMParser : UThreadWrapper
                 if (nodes.ContainsKey(nodeRef))
                 {
                     OSMNode n = (OSMNode)nodes[nodeRef];
-
-                    if (n.lat < bounds[2] && n.lat > bounds[0] && n.lon < bounds[3] && n.lon > bounds[1])
-                    {
-                        way.nodesIds.Add(nodeRef);
-                    }
+                    way.nodesIds.Add(nodeRef);
+                    prev = n;
                 }
             }
 
