@@ -8,7 +8,6 @@ public class OSMDebug : MonoBehaviour
 {
     private OSMChunk chunk;
 
-    //[Range(0.0f, 10.5f)]
     public float nodeSize = 0.1f;
     private Vector3 sNodes;
     public Color cNodes = new Color(1,0,1,0.3f);
@@ -23,11 +22,6 @@ public class OSMDebug : MonoBehaviour
         sNodes = new Vector3(nodeSize, nodeSize, nodeSize);
         chunk = GetComponent<OSMChunk>();
         offset = new Vector3(0, 44000, 0);
-    }
-
-    private void Update()
-    {
-
     }
 
     private void drawChunkBounds()
@@ -59,7 +53,6 @@ public class OSMDebug : MonoBehaviour
         {
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, transform.position + new Vector3(250, 0, 250));
-            //drawChunkBounds();
         }
 
         //Gizmos.DrawCube(new Vector3(0, 0, 0), sNodes

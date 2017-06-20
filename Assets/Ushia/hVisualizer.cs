@@ -27,9 +27,8 @@ public class hVisualizer : MonoBehaviour
         data.Apply();
         m.SetTexture("_MainTex", data);
 
-        GetComponent<Transform>().position = new Vector3(GetComponent<Transform>().position.x, -4400, GetComponent<Transform>().position.z);
         TerrainData td = terrain.terrainData;
-        //td.heightmapResolution = 257;
+        
         td.alphamapResolution = 257;
 
         float[,] heights = new float[td.alphamapWidth, td.alphamapHeight];

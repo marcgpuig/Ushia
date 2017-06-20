@@ -99,42 +99,6 @@ public class UPlayer : MonoBehaviour
         }
     }
 
-    private void removeResidualChunks()
-    {
-        int totalAvailableChunks = nQuadrants() + maxResidualChunks;
-        List<distChunk> distances = new List<distChunk>();
-
-        foreach (DictionaryEntry p in map)
-        {
-            GameObject gameObj = (GameObject)p.Value;
-
-            GameObject t = (GameObject)p.Value;
-            Int3 chunk = Int3.findChunk(t.transform.position + new Vector3(chunkSize*0.5f, chunkSize * 0.5f, chunkSize * 0.5f), chunkSize);
-            Int3 player = Int3.findChunk(transform.position, chunkSize);
-
-            /// distancia de Chebyshov
-            /// https://es.wikipedia.org/wiki/Distancia_de_Chebyshov
-            Int3 dist = chunk - player;
-            dist = dist.abs();
-
-            distances.Add(new distChunk(Mathf.Max(dist.x, dist.z), (string)p.Key));
-        }
-
-        List<distChunk> sortedDistances = distances.OrderByDescending(o => o.dist).ToList();
-
-        int i = map.Count;
-        foreach (distChunk d in sortedDistances)
-        {
-            if (i <= totalAvailableChunks) return;
-            if (map.ContainsKey(d.chunk))
-            {
-                DestroyImmediate((GameObject)map[d.chunk]);
-                map.Remove(d.chunk);
-            }
-            i--;
-        }
-    }
-
     public static string genTerrainName(int x, int y)
     {
         return "Terrain_(" + x + "," + y + ")";
@@ -177,7 +141,45 @@ public class UPlayer : MonoBehaviour
             OSMDebug visualization = t.AddComponent<OSMDebug>();
         }
 
+        //t.AddComponent<AssignSplatMap>();
+
         return t;
+    }
+
+    private void removeResidualChunks()
+    {
+        int totalAvailableChunks = nQuadrants() + maxResidualChunks;
+        List<distChunk> distances = new List<distChunk>();
+
+        foreach (DictionaryEntry p in map)
+        {
+            GameObject gameObj = (GameObject)p.Value;
+
+            GameObject t = (GameObject)p.Value;
+            Int3 chunk = Int3.findChunk(t.transform.position + new Vector3(chunkSize*0.5f, chunkSize * 0.5f, chunkSize * 0.5f), chunkSize);
+            Int3 player = Int3.findChunk(transform.position, chunkSize);
+
+            /// distancia de Chebyshov
+            /// https://es.wikipedia.org/wiki/Distancia_de_Chebyshov
+            Int3 dist = chunk - player;
+            dist = dist.abs();
+
+            distances.Add(new distChunk(Mathf.Max(dist.x, dist.z), (string)p.Key));
+        }
+
+        List<distChunk> sortedDistances = distances.OrderByDescending(o => o.dist).ToList();
+
+        int i = map.Count;
+        foreach (distChunk d in sortedDistances)
+        {
+            if (i <= totalAvailableChunks) return;
+            if (map.ContainsKey(d.chunk))
+            {
+                DestroyImmediate((GameObject)map[d.chunk]);
+                map.Remove(d.chunk);
+            }
+            i--;
+        }
     }
 
     void Update()

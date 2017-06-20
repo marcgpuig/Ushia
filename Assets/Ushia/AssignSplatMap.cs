@@ -18,7 +18,24 @@ public class AssignSplatMap : MonoBehaviour
 
     void Start()
     {
-        
+        // Get the attached terrain component
+        Terrain terrain = GetComponent<Terrain>();
+
+        SplatPrototype[] textures = new SplatPrototype[4];
+
+        textures[0].texture = (Texture2D)Resources.Load("Materials/terrain/03/adesert_rocky_d");
+        textures[0].normalMap = (Texture2D)Resources.Load("Materials/terrain/03/desert_rocky_n");
+
+        textures[1].texture = (Texture2D)Resources.Load("Materials/terrain/03/grass_ground2y_d");
+        textures[1].normalMap = (Texture2D)Resources.Load("Materials/terrain/03/grass_ground_n");
+
+        textures[2].texture = (Texture2D)Resources.Load("Materials/terrain/03/mntn_white_d");
+        textures[2].normalMap = (Texture2D)Resources.Load("Materials/terrain/03/jungle_stone_n");
+
+        textures[3].texture = (Texture2D)Resources.Load("Materials/terrain/03/snow_bumpy_d");
+        textures[3].normalMap = (Texture2D)Resources.Load("Materials/terrain/03/snow_bumpy_n");
+
+        terrain.terrainData.splatPrototypes = textures;
     }
 
     private float genHeight(float actualHeight, float intervalMin, float intervalMax)
@@ -85,11 +102,11 @@ public class AssignSplatMap : MonoBehaviour
                 //splatWeights[1] = 1.0f - Mathf.Clamp01(steepness * steepness / (terrainData.heightmapHeight / 0.5f));
                 //Mathf.Lerp();
                 float flatness = Mathf.Clamp01(steepness * steepness / (terrainData.heightmapHeight / 0.1f));
-                //splatWeights[2] = flatness;
+                splatWeights[2] = flatness;
 
-                splatWeights[0] = (genHeight(nheight, 0.33f, 0.76f));// * (1.0f - flatness);
-                splatWeights[1] = (genHeight(nheight, 0.0f, 0.43f)); // * (1.0f - flatness);
-                splatWeights[3] = (genHeight(nheight, 0.56f, 1.0f)); // * (1.0f - flatness);
+                splatWeights[0] = (genHeight(nheight, 0.33f, 0.76f)) * (1.0f - flatness);
+                splatWeights[1] = (genHeight(nheight, 0.0f, 0.43f)) * (1.0f - flatness);
+                splatWeights[3] = (genHeight(nheight, 0.56f, 1.0f)) * (1.0f - flatness);
 
                 //splatWeights[3] = 1.0f - Mathf.Clamp01(height * height / (terrain.drawHeightmap / 1.0f));
                 //splatWeights[3] = Mathf.Clamp01(height * height / (terrainData.heightmapHeight / 1.0f));
@@ -108,7 +125,7 @@ public class AssignSplatMap : MonoBehaviour
                 }
             }
         }
-
+        /*
         // erosion
         float[,] sediment = new float[terrainData.alphamapWidth, terrainData.alphamapHeight];
         for (int i = 0; i < erosionSteps; i++)
@@ -154,7 +171,7 @@ public class AssignSplatMap : MonoBehaviour
                 }
             }
         }
-
+        */
         // Finally assign the new splatmap to the terrainData:
         terrainData.SetAlphamaps(0, 0, splatmapData);
     }

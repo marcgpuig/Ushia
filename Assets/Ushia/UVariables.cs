@@ -16,6 +16,7 @@
     /// <returns></returns>
     public static bool Load(string filePath)
     {
+        // TODO: load from file
         return true;
     }
 }

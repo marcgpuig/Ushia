@@ -59,6 +59,21 @@ public class UPlayerEditor : Editor
         /// generation
         if (foldoutWorldGeneration = EditorGUILayout.Foldout(foldoutWorldGeneration, "Generation", EditorStyles.foldout))
         {
+            /// API key
+            if (UVariables.mapzenAPIKey == "")
+            {
+                Color old = GUI.color;
+                GUI.color = new Color(0.8f, 0.2f, 0.2f);
+                EditorGUILayout.HelpBox("You don\'t have a Mapzen API key.\nYou can change the Mapzen API key in UVariables.cs.\nGet one in: \nhttps://mapzen.com/developers/sign_in", MessageType.Info);
+                GUI.color = old;
+            }
+            else
+            {
+                EditorGUILayout.BeginVertical(GUI.skin.box);
+                EditorGUILayout.LabelField(new GUIContent("Current Mapzen API key is \"" + UVariables.mapzenAPIKey + "\"", "You can change the \"Mapzen API key\" in UVariables.cs.\nIf you don't have one, get it in: \nhttps://mapzen.com/developers/sign_in"));
+                EditorGUILayout.EndVertical();
+            }
+
             GUILayout.BeginHorizontal();
             genTerrain.boolValue = UEditor.UToggleButton(genTerrain.boolValue, "Terrain");
             genOSM.boolValue = UEditor.UToggleButton(genOSM.boolValue, "OSM Data");

@@ -10,9 +10,9 @@ public class OSMChunk : MonoBehaviour
     public USlippyTile tile  = null;
     private UPlayer player;
 
-    private bool loaded = false;
+    private bool downloaded = false;
 
-    public bool isLoaded { get { return loaded; } }
+    public bool isLoaded { get { return downloaded; } }
     public bool haveParser { get { return parser != null; } }
     /// bounds
     private double minLat = 0;
@@ -25,6 +25,7 @@ public class OSMChunk : MonoBehaviour
     /// here is explained why to use Hashtable
     /// http://cc.davelozinski.com/c-sharp/fastest-collection-for-string-lookups
     public Hashtable nodes = null;
+    public Hashtable nodesOutOfChunk = null;
     public Hashtable ways  = null;
 
     private bool nodesSettedInTerrain = false;
@@ -127,7 +128,7 @@ public class OSMChunk : MonoBehaviour
 
                 /// set the parser to null to ignore it one time has finished
                 parser = null;
-                loaded = true;
+                downloaded = true;
             }
         }
 

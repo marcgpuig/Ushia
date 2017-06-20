@@ -43,6 +43,11 @@ public class OSMParser : UThreadWrapper
         height = UMaths.lat2y(bounds[2]) - UMaths.lat2y(bounds[0]);
     }
 
+    private bool isInsideChunk(double lat, double lon)
+    {
+        return (lat <= bounds[2] && lat >= bounds[0] && lon < bounds[3] && lon > bounds[1]);
+    }
+
     private void getNodes()
     {
         /// node structure:
@@ -61,26 +66,21 @@ public class OSMParser : UThreadWrapper
             double lat = double.Parse(n.Attributes["lat"].Value);
             double lon = double.Parse(n.Attributes["lon"].Value);
 
-            /// if the node is outside the boundings don't add it
-            if (lat <= bounds[2] && lat >= bounds[0] && lon < bounds[3] && lon > bounds[1])
+            /// Add node
+            long id = long.Parse(n.Attributes["id"].Value);
+
+            OSMNode node = new OSMNode(id, lon, lat);
+
+            /// adding all the node tags
+            foreach (XmlNode tag in n.SelectNodes("tag"))
             {
-                long id = long.Parse(n.Attributes["id"].Value);
-
-                OSMNode node = new OSMNode(id, lon, lat);
-
-                /// adding all the node tags
-                foreach (XmlNode tag in n.SelectNodes("tag"))
-                {
-                    string k = tag.Attributes["k"].Value;
-                    string v = tag.Attributes["v"].Value;
-                    node.tags.Add(k, v);
-                }
-                
-                nodes.Add(id, node);
+                string k = tag.Attributes["k"].Value;
+                string v = tag.Attributes["v"].Value;
+                node.tags.Add(k, v);
             }
+                
+            nodes.Add(id, node);
         }
-
-
     }
 
     private void getWays()
@@ -100,22 +100,38 @@ public class OSMParser : UThreadWrapper
 
         foreach (XmlNode w in wayList)
         {
+            bool lastNodeWasInside = false;
             long id = long.Parse(w.Attributes["id"].Value);
             OSMWay way = new OSMWay();
-
-            OSMNode prev = null;
-            OSMNode next = null;
 
             /// adding all the node references
             foreach (XmlNode t in w.SelectNodes("nd"))
             {
+                /// get the node ID (reference)
                 long nodeRef = long.Parse(t.Attributes["ref"].Value);
 
-                if (nodes.ContainsKey(nodeRef))
+                if(nodes.ContainsKey(nodeRef))
                 {
                     OSMNode n = (OSMNode)nodes[nodeRef];
-                    way.nodesIds.Add(nodeRef);
-                    prev = n;
+
+                    /// if the node is inside the chunk, save the way and don't delete the node
+                    if (isInsideChunk(n.lat, n.lon))
+                    {
+                        way.nodesIds.Add(nodeRef);
+                        lastNodeWasInside = true;
+                    }
+                    /// else if the node is outside but the previous node was inside, do de same 
+                    /// but be sure that if the next node is outside, it will be deleted
+                    else if (lastNodeWasInside)
+                    {
+                        way.nodesIds.Add(nodeRef);
+                        lastNodeWasInside = false;
+                    }
+                    /// else delete the nodes that are outside of the chunk
+                    else
+                    {
+                        nodes.Remove(nodeRef);
+                    }
                 }
             }
 

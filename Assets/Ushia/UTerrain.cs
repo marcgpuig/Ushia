@@ -9,7 +9,7 @@ public class UTerrain : MonoBehaviour {
     public static float terrainDepth = -4400*10;
     public static float terrainHeight = 8848;
 
-    public bool generated = false;
+    public bool downloaded = false;
 
     private UTerrainLoader loader;
     public USlippyTile tile;
@@ -22,7 +22,7 @@ public class UTerrain : MonoBehaviour {
 
     private Terrain[] neighbors; /// left, top, right, bottom
     
-    public bool isFullyLoaded { get { return generated && fullFixed; } }
+    public bool isFullyLoaded { get { return downloaded && fullFixed; } }
 
     public void init(USlippyTile t, UPlayer p)
     {
@@ -208,7 +208,7 @@ public class UTerrain : MonoBehaviour {
             {
                 /// Here the thread have finished
                 genHeight();
-                generated = true;
+                downloaded = true;
                 loader = null;
             }
         }
@@ -216,9 +216,10 @@ public class UTerrain : MonoBehaviour {
         /// fullFixed    - all the fixes has been applied (this one is the first because 
         ///                is the most restrictive and there is no need to process the 
         ///                other comparasions)
-        /// generated    - guarantee that all the data info from this terrain is fully loaded
+        /// generated    - guarantee that all the data info from this terrain is fully 
+        ///                downloaded
         /// tile != null - fixes errors in editor when recompiling the code
-        if (!fullFixed && generated && tile != null)
+        if (!fullFixed && downloaded && tile != null)
         {
             /// if X border is not fixed, fix it
             if (!borderXFixed)
@@ -228,7 +229,7 @@ public class UTerrain : MonoBehaviour {
                 if (map.ContainsKey(topTerrainKey))
                 {
                     GameObject terrain = (GameObject)map[topTerrainKey];
-                    if (terrain.GetComponent<UTerrain>().generated)
+                    if (terrain.GetComponent<UTerrain>().downloaded)
                     {
                         fixBorderX(terrain.GetComponent<Terrain>());
                         borderXFixed = true;
@@ -244,7 +245,7 @@ public class UTerrain : MonoBehaviour {
                 if (map.ContainsKey(rightTerrainKey))
                 {
                     GameObject terrain = (GameObject)map[rightTerrainKey];
-                    if (terrain.GetComponent<UTerrain>().generated)
+                    if (terrain.GetComponent<UTerrain>().downloaded)
                     {
                         fixBorderY(terrain.GetComponent<Terrain>());
                         borderYFixed = true;
@@ -260,7 +261,7 @@ public class UTerrain : MonoBehaviour {
                 if (map.ContainsKey(rightTerrainKey))
                 {
                     GameObject terrain = (GameObject)map[rightTerrainKey];
-                    if (terrain.GetComponent<UTerrain>().generated)
+                    if (terrain.GetComponent<UTerrain>().downloaded)
                     {
                         fixEdge(terrain.GetComponent<Terrain>());
                         edgeFixed = true;
