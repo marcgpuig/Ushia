@@ -4,11 +4,11 @@ On development project for [Synthia-dataset][synthia].
 
 This project uses [OpenStreetMap][OpenStreetMap] ([OSM XML][OSMXML]) and [Mapzen][Mapzen] data.
 
-![Fuji]
-![Cerdanyola]
+![Fuji](http://imgur.com/t3KfRse.png)
+![Cerdanyola](http://i.imgur.com/uJ3VXq9.png)
 
 ## Install
-	git clone https://github.com/marcgpuig/Ushia.git
+    git clone https://github.com/marcgpuig/Ushia.git
 
 ## Unity version
 Currently using [Unity3D][unity] 5.6.
@@ -27,7 +27,3 @@ This project is under [MIT License][MIT].
 [synthia]:http://synthia-dataset.net/
 [test]:https://github.com/osmcode/osm-testdata/tree/master/grid/data
 [MIT]:https://opensource.org/licenses/MIT
-
-[comment]: <> (Images)
-[Cerdanyola]:http://i.imgur.com/uJ3VXq9.png
-[Fuji]:http://imgur.com/t3KfRse.png
